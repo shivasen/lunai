@@ -1,6 +1,9 @@
 // Lunai 3D Landing Page - Final Optimized Version with All Requirements
-// FIXED: Contact form dropdown functionality
-// FIXED: Updated testimonials and voice controls
+// REMOVED: Professional Header
+// ADDED: Scrollbar hiding CSS (Confirmed)
+// ENHANCED: AI Business Analyst logic with detailed explanations and sub-service recommendations.
+// FIXED: Audio visualizer simulation for fallback TTS.
+// UPDATED: UI adjustments for voice panel and footer.
 
 // SETUP INSTRUCTIONS FOR EMAILJS:
 // 
@@ -367,6 +370,12 @@ class EnhancedLunaiExperience {
       features: "Witness the birth of Ra Lunai AI - our revolutionary artificial intelligence system coming soon to transform your digital universe with cosmic precision.",
       contact: "Ready to embark on your own cosmic journey? The universe of possibilities awaits your command. Let us guide you through the eclipse of innovation.",
       raLunai: "Ra Lunai AI - the next evolution in cosmic intelligence - coming soon to transform your digital universe with unprecedented power and elegance.",
+      aiAnalyst: {
+          prompt: "Describe your business and challenges, and I will recommend the optimal services for your cosmic journey.",
+          analyzing: "Analyzing your input... Engaging cosmic intelligence to map your path to success.",
+          results: "Analysis complete. Based on your needs, I recommend focusing on these strategic areas.",
+          error: "Please provide your industry and describe your challenges for a complete analysis."
+      },
       email: {
         loading: "Transmitting your message across digital dimensions...",
         success: "Your message has been successfully launched into the cosmic network. We'll respond within 24 hours.",
@@ -420,6 +429,7 @@ class EnhancedLunaiExperience {
     this.initVisualizer();
     this.initRefinedLogo();
     this.initServicesSection();
+    this.initAIBusinessAnalyst();
     this.initRaLunaiFeature();
     this.initTestimonials();
     this.initResponsiveOptimizations();
@@ -1441,7 +1451,9 @@ class EnhancedLunaiExperience {
       // Load voices
       const loadVoices = () => {
         const voices = this.fallbackTTS.getVoices();
-        console.log('Available voices:', voices.length);
+        if (voices.length > 0) {
+            console.log('Available voices:', voices.length);
+        }
       };
       
       this.fallbackTTS.addEventListener('voiceschanged', loadVoices);
@@ -1456,10 +1468,10 @@ class EnhancedLunaiExperience {
   }
 
   showAudioPanel() {
-    const panel = document.getElementById('audioPanel');
-    if (panel) {
-      panel.style.opacity = '1';
-      panel.style.transform = 'translateX(0)';
+    const toggleButton = document.getElementById('toggleAudioPanel');
+    if (toggleButton) {
+        toggleButton.style.opacity = '0.7';
+        toggleButton.style.transform = 'translateX(0)';
     }
   }
 
@@ -1512,20 +1524,9 @@ class EnhancedLunaiExperience {
 
   toggleAudioPanel() {
     const panel = document.getElementById('audioPanel');
-    const expandedControls = document.getElementById('audioControls');
-    
     this.isVoicePanelExpanded = !this.isVoicePanelExpanded;
-    
-    if (panel && expandedControls) {
-      if (this.isVoicePanelExpanded) {
-        panel.classList.add('expanded');
-        expandedControls.style.maxHeight = '400px';
-        expandedControls.style.opacity = '1';
-      } else {
-        panel.classList.remove('expanded');
-        expandedControls.style.maxHeight = '0';
-        expandedControls.style.opacity = '0';
-      }
+    if (panel) {
+        panel.classList.toggle('is-open', this.isVoicePanelExpanded);
     }
   }
 
@@ -1638,28 +1639,42 @@ class EnhancedLunaiExperience {
     utterance.pitch = voiceInfo.pitch;
     utterance.volume = this.isMuted ? 0 : this.currentVolume;
 
-    // Try to find a suitable voice
+    // ENHANCED: Try to find a suitable voice, prioritizing Indian English for better pronunciation of South Indian names.
     const voices = this.fallbackTTS.getVoices();
     let selectedVoice = null;
 
-    // Voice mapping for fallback
-    const voicePreferences = {
-      female: ['female', 'woman', 'zira', 'samantha', 'susan', 'aria'],
-      male: ['male', 'man', 'david', 'daniel', 'alex']
-    };
+    // 1. Prioritize Indian English voices
+    const preferredVoices = voices.filter(v => v.lang === 'en-IN');
+    if (preferredVoices.length > 0) {
+        selectedVoice = preferredVoices.find(v => v.name.toLowerCase().includes(voiceInfo.gender)) || preferredVoices[0];
+    }
 
-    const preferences = voicePreferences[voiceInfo.gender] || [];
+    // 2. If no Indian voice, search for other English voices based on gender preference
+    if (!selectedVoice) {
+        const voicePreferences = {
+            female: ['female', 'woman', 'zira', 'samantha', 'susan', 'aria', 'google us english'],
+            male: ['male', 'man', 'david', 'daniel', 'alex', 'google uk english male']
+        };
+        const preferences = voicePreferences[voiceInfo.gender] || [];
+        for (const pref of preferences) {
+            selectedVoice = voices.find(v => 
+                v.lang.startsWith('en-') && 
+                (v.name.toLowerCase().includes(pref) || v.gender?.toLowerCase() === pref)
+            );
+            if (selectedVoice) break;
+        }
+    }
     
-    for (const pref of preferences) {
-      selectedVoice = voices.find(v => 
-        v.name.toLowerCase().includes(pref) || 
-        v.gender?.toLowerCase() === pref
-      );
-      if (selectedVoice) break;
+    // 3. Fallback to any English voice
+    if (!selectedVoice) {
+        selectedVoice = voices.find(v => v.lang.startsWith('en-'));
     }
 
     if (selectedVoice) {
       utterance.voice = selectedVoice;
+      console.log(`Using fallback voice: ${selectedVoice.name} (${selectedVoice.lang})`);
+    } else {
+      console.warn("No suitable English fallback voice found. Using browser default.");
     }
 
     utterance.onstart = () => {
@@ -1683,7 +1698,7 @@ class EnhancedLunaiExperience {
     if (!this.audioContext) return;
 
     this.analyserNode = this.audioContext.createAnalyser();
-    this.analyserNode.fftSize = 256;
+    this.analyserNode.fftSize = 128; // Smaller size for smoother visualization
     this.visualizerData = new Uint8Array(this.analyserNode.frequencyBinCount);
   }
 
@@ -1695,41 +1710,43 @@ class EnhancedLunaiExperience {
     let animationFrame;
 
     const draw = () => {
-      canvas.width = canvas.offsetWidth * window.devicePixelRatio;
-      canvas.height = canvas.offsetHeight * window.devicePixelRatio;
-      canvas.style.width = canvas.offsetWidth + 'px';
-      canvas.style.height = canvas.offsetHeight + 'px';
-      ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+        animationFrame = requestAnimationFrame(draw);
+        
+        const dpr = window.devicePixelRatio || 1;
+        canvas.width = canvas.offsetWidth * dpr;
+        canvas.height = canvas.offsetHeight * dpr;
+        ctx.scale(dpr, dpr);
 
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.clearRect(0, 0, canvas.offsetWidth, canvas.offsetHeight);
 
-      if (this.isSpeaking) {
-        if (this.analyserNode && this.visualizerData) {
-          this.analyserNode.getByteFrequencyData(this.visualizerData);
-        } else {
-          // Simulate data for fallback TTS
-          for (let i = 0; i < 128; i++) {
-            this.visualizerData[i] = Math.random() * 128 + 64;
-          }
+        if (this.isSpeaking) {
+            if (this.analyserNode && this.visualizerData && this.kyutaiClient?.isConnected) {
+                this.analyserNode.getByteFrequencyData(this.visualizerData);
+            } else {
+                // FIXED: More robust and visually appealing simulation for fallback TTS
+                const time = Date.now() * 0.005;
+                for (let i = 0; i < this.visualizerData.length; i++) {
+                    const sinWave = (Math.sin(time + i * 0.2) + 1) / 2; // 0 to 1
+                    const noise = Math.random() * 0.2;
+                    this.visualizerData[i] = (sinWave + noise) * 128 + 64;
+                }
+            }
+
+            const barCount = 32;
+            const barWidth = (canvas.offsetWidth / barCount);
+            let x = 0;
+
+            for (let i = 0; i < barCount; i++) {
+                const dataIndex = Math.floor(i * (this.visualizerData.length / barCount));
+                const barHeight = (this.visualizerData[dataIndex] / 255) * canvas.offsetHeight * 0.9;
+                
+                const hue = (i / barCount) * 180 + 180; // Cyan to Magenta range
+                ctx.fillStyle = `hsla(${hue}, 80%, 60%, 0.8)`;
+                ctx.fillRect(x, canvas.offsetHeight - barHeight, barWidth - 2, barHeight);
+                
+                x += barWidth;
+            }
         }
-
-        const barWidth = (canvas.offsetWidth / 64);
-        let barHeight;
-        let x = 0;
-
-        for (let i = 0; i < 64; i++) {
-          const dataIndex = Math.floor(i * (this.visualizerData.length / 64));
-          barHeight = (this.visualizerData[dataIndex] / 255) * canvas.offsetHeight * 0.8;
-          
-          const hue = (i / 64) * 360;
-          ctx.fillStyle = `hsla(${hue}, 70%, 60%, 0.8)`;
-          ctx.fillRect(x, canvas.offsetHeight - barHeight, barWidth - 1, barHeight);
-          
-          x += barWidth;
-        }
-      }
-
-      animationFrame = requestAnimationFrame(draw);
     };
 
     draw();
@@ -1794,11 +1811,12 @@ class EnhancedLunaiExperience {
     const observer = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
         if (entry.isIntersecting && entry.target.dataset.narrate) {
-          let content = this.voiceContent[entry.target.dataset.narrate];
-          
-          // Special handling for features section (Ra Lunai AI)
-          if (entry.target.dataset.narrate === 'features') {
-            content = this.voiceContent.features;
+          let contentKey = entry.target.dataset.narrate;
+          let content = this.voiceContent[contentKey];
+
+          // Handle nested content objects
+          if (typeof content === 'object' && content.prompt) {
+              content = content.prompt;
           }
           
           if (content && this.isAudioInitialized) {
@@ -2133,11 +2151,211 @@ class EnhancedLunaiExperience {
 
     requestAnimationFrame(() => this.animate());
   }
+  
+  // NEW: Sophisticated AI Business Analyst
+  initAIBusinessAnalyst() {
+    this.servicesData = {
+        branding: {
+            title: 'Strategic Branding Excellence', icon: '⭐',
+            subServices: {
+                'Brand Strategy Development': ['brand', 'strategy', 'framework', 'identity', 'reputation', 'market position'],
+                'Naming & Identity': ['name', 'naming', 'identity', 'rebrand'],
+                'Visual Identity + Logo Design': ['logo', 'visual', 'design', 'look', 'feel', 'style guide'],
+                'Verbal Identity Systems': ['voice', 'tone', 'messaging', 'copywriting', 'tagline'],
+                'Premium Packaging Design': ['packaging', 'product design', 'unboxing']
+            },
+            industryWeight: { tech: 1.2, ecommerce: 1.5, creative: 1.4, healthcare: 1.1 }
+        },
+        research: {
+            title: 'Strategic Research & Intelligence', icon: '🔍',
+            subServices: {
+                'Market Research & Analysis': ['market', 'research', 'data', 'analysis', 'trends'],
+                'Business Intelligence': ['intelligence', 'bi', 'dashboard', 'kpi'],
+                'Audience + Competitor Intelligence': ['audience', 'customer', 'competitor', 'insights'],
+                'Customer Journey Mapping': ['journey map', 'user flow', 'touchpoints', 'experience'],
+            },
+            industryWeight: { tech: 1.3, finance: 1.4, ecommerce: 1.2, politics: 1.1 }
+        },
+        strategy: {
+            title: 'Comprehensive Strategy Development', icon: '🧭',
+            subServices: {
+                'Business Model Innovation': ['business model', 'revenue', 'monetization', 'innovation'],
+                'UI/UX Strategy': ['ux', 'ui', 'user experience', 'usability', 'user interface', 'engagement'],
+                'Digital & Social Media Strategy': ['digital strategy', 'social media', 'online', 'presence', 'growth'],
+                'Content Strategy': ['content strategy', 'editorial', 'calendar', 'distribution'],
+                'Campaign + Launch Strategy': ['launch', 'campaign', 'go-to-market', 'promotion']
+            },
+            industryWeight: { tech: 1.4, ecommerce: 1.3, creative: 1.2, politics: 1.2 }
+        },
+        political: {
+            title: 'Political Campaign Excellence', icon: '🏛️',
+            subServices: {
+                'Political Campaign Strategy': ['political', 'campaign', 'election', 'voter', 'advocacy'],
+                'Marketing & Engagement Strategy': ['marketing', 'engagement', 'outreach', 'grassroots'],
+                'Social Media Asset Development': ['social media', 'assets', 'posts', 'ads'],
+                'Editorial Calendar Management': ['editorial', 'calendar', 'schedule', 'content plan']
+            },
+            industryWeight: { politics: 2.0 }
+        },
+        digital: {
+            title: 'Digital Web Excellence', icon: '🌐',
+            subServices: {
+                'Information Architecture': ['ia', 'structure', 'sitemap', 'navigation'],
+                'UX Strategy': ['ux', 'user experience', 'usability', 'user flow', 'wireframe'],
+                'Responsive Development': ['website', 'web', 'app', 'digital', 'responsive', 'mobile'],
+                'Accessibility Compliance': ['accessibility', 'wcag', 'a11y', 'inclusive'],
+                'CMS + Back-End Integration': ['cms', 'backend', 'database', 'integration', 'wordpress', 'headless']
+            },
+            industryWeight: { tech: 1.5, ecommerce: 1.4, finance: 1.2, healthcare: 1.2 }
+        },
+        content: {
+            title: 'Content + Creative Excellence', icon: '✨',
+            subServices: {
+                'Strategic Content Development': ['content', 'copywriting', 'storytelling', 'narrative'],
+                'Professional Copywriting': ['copy', 'writing', 'sales page', 'landing page'],
+                'Video + Animation': ['video', 'animation', 'motion graphics', 'explainer'],
+                'Data Visualization + Infographics': ['data viz', 'infographic', 'charts', 'graphs'],
+                'Professional Photography + Editing': ['photo', 'photography', 'images', 'editing']
+            },
+            industryWeight: { creative: 1.5, ecommerce: 1.2, politics: 1.1 }
+        }
+    };
+
+    const form = document.getElementById('aiAnalystForm');
+    const analyzeBtn = document.getElementById('analyzeBtn');
+    const resultsContainer = document.getElementById('aiResults');
+
+    if (!form || !analyzeBtn || !resultsContainer) {
+        console.error('AI Analyst elements not found.');
+        return;
+    }
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const industry = form.elements.business_industry.value;
+        const challenges = form.elements.business_challenges.value;
+
+        if (!industry || !challenges.trim()) {
+            this.speak(this.voiceContent.aiAnalyst.error);
+            resultsContainer.innerHTML = `<p class="form-message error show">${this.voiceContent.aiAnalyst.error}</p>`;
+            resultsContainer.style.display = 'block';
+            return;
+        }
+        
+        const btnText = analyzeBtn.querySelector('.btn-text');
+        const btnLoading = analyzeBtn.querySelector('.btn-loading');
+        
+        analyzeBtn.classList.add('loading');
+        analyzeBtn.disabled = true;
+        btnText.style.opacity = '0';
+        btnLoading.style.opacity = '1';
+        this.speak(this.voiceContent.aiAnalyst.analyzing);
+        resultsContainer.style.display = 'none';
+
+        await new Promise(resolve => setTimeout(resolve, 2500));
+
+        const recommendations = this.analyzeBusinessNeeds(industry, challenges);
+        this.displayAIRecommendations(recommendations);
+        
+        analyzeBtn.classList.remove('loading');
+        analyzeBtn.disabled = false;
+        btnText.style.opacity = '1';
+        btnLoading.style.opacity = '0';
+
+        this.speak(this.voiceContent.aiAnalyst.results);
+    });
+  }
+
+  analyzeBusinessNeeds(industry, challenges) {
+    const scores = {};
+    const recommendedSubServices = {};
+    const reasons = {};
+
+    const lowerChallenges = challenges.toLowerCase().replace(/[.,]/g, '');
+
+    for (const serviceKey in this.servicesData) {
+        scores[serviceKey] = 0;
+        recommendedSubServices[serviceKey] = new Set();
+        reasons[serviceKey] = new Set();
+        
+        const service = this.servicesData[serviceKey];
+
+        for (const subServiceTitle in service.subServices) {
+            for (const keyword of service.subServices[subServiceTitle]) {
+                const regex = new RegExp(`\\b${keyword}\\b`, 'gi');
+                if (lowerChallenges.match(regex)) {
+                    scores[serviceKey] += 1.5; // Higher weight for direct keyword match
+                    recommendedSubServices[serviceKey].add(subServiceTitle);
+                    reasons[serviceKey].add(keyword);
+                }
+            }
+        }
+        
+        if (service.industryWeight && service.industryWeight[industry]) {
+            scores[serviceKey] *= service.industryWeight[industry];
+        }
+    }
+    
+    const sortedServices = Object.entries(scores)
+        .map(([service, score]) => ({ service, score }))
+        .filter(item => item.score > 0)
+        .sort((a, b) => b.score - a.score);
+
+    return sortedServices.slice(0, 3).map(item => ({
+        ...item,
+        details: this.servicesData[item.service],
+        subServices: Array.from(recommendedSubServices[item.service]),
+        reason: `Your challenges mentioned keywords like: ${Array.from(reasons[item.service]).slice(0, 3).join(', ')}.`
+    }));
+  }
+
+  displayAIRecommendations(recommendations) {
+    const resultsContainer = document.getElementById('aiResults');
+    if (!resultsContainer) return;
+
+    if (recommendations.length === 0) {
+        resultsContainer.innerHTML = `<h3>No specific services match your description.</h3><p class="results-disclaimer">Try describing your challenges in more detail, or contact us directly for a consultation.</p>`;
+        resultsContainer.style.display = 'block';
+        return;
+    }
+
+    const recommendationsHTML = recommendations.map(rec => {
+        const subServicesHTML = rec.subServices.map(sub => `<li class="sub-service-item">${sub}</li>`).join('');
+        
+        return `
+            <div class="recommendation-card">
+                <div class="recommendation-header">
+                    <div class="service-icon">${rec.details.icon}</div>
+                    <div class="recommendation-title-block">
+                        <h4 class="service-title">${rec.details.title}</h4>
+                    </div>
+                </div>
+                <p class="recommendation-reason">${rec.reason}</p>
+                <h5 class="suggested-services-title">Suggested Focus Areas:</h5>
+                <ul class="sub-service-list">
+                    ${subServicesHTML}
+                </ul>
+            </div>
+        `;
+    }).join('');
+
+    resultsContainer.innerHTML = `
+        <h3>Your Recommended Cosmic Services</h3>
+        <div class="recommendations-grid">
+            ${recommendationsHTML}
+        </div>
+        <p class="results-disclaimer">This is an AI-powered recommendation. For a detailed consultation, please contact us.</p>
+    `;
+    resultsContainer.style.display = 'block';
+    resultsContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+
 }
 
 // Initialize the enhanced experience when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
-  console.log('DOM loaded, initializing Final Enhanced Lunai Experience with FIXED dropdown');
+  console.log('DOM loaded, initializing Final Enhanced Lunai Experience with AI Analyst');
   new EnhancedLunaiExperience();
 });
 

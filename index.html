@@ -8,7 +8,7 @@
     <title>Lunai - AI Voice, Branding, Digital Strategy & Creative Services</title>
     <meta name="title" content="Lunai - AI Voice, Branding, Digital Strategy & Creative Services">
     <meta name="description" content="Lunai offers cosmic digital excellence with 6 core services: Strategic Branding, Research & Intelligence, Strategy Development, Political Campaigns, Digital Web, and Content/Creative Excellence. Transform your vision with our AI-powered solutions.">
-    <meta name="keywords" content="Strategic Branding, Brand Strategy, Research Intelligence, Market Research, Strategy Development, Business Model Innovation, Political Campaign Excellence, Digital Web Excellence, UX Strategy, Content and Creative Excellence, Professional Copywriting, AI Voice Synthesis">
+    <meta name="keywords" content="Strategic Branding, Brand Strategy, Research Intelligence, Market Research, Strategy Development, Business Model Innovation, Political Campaign Excellence, Digital Web Excellence, UX Strategy, Content and Creative Excellence, Professional Copywriting, AI Voice Synthesis, AI Business Analyst">
     <meta name="robots" content="index, follow">
     <meta name="language" content="English">
     <meta name="author" content="Lunai">
@@ -58,47 +58,49 @@
     <!-- EmailJS SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 </head>
-<body>
-    <!-- Enhanced Audio Controls with Voice Selection -->
-    <div class="audio-controls-panel" id="audioPanel">
-        <button id="toggleAudioPanel" class="panel-toggle">🎙️</button>
-        <div class="audio-controls-expanded" id="audioControls">
-            <div class="voice-selection">
-                <h4>Cosmic Voice</h4>
-                <div class="voice-options">
-                    <button class="voice-btn active" data-voice="nova">
-                        <span class="voice-name">Nova</span>
-                        <span class="voice-desc">Ethereal</span>
-                    </button>
-                    <button class="voice-btn" data-voice="stellar">
-                        <span class="voice-name">Stellar</span>
-                        <span class="voice-desc">Futuristic</span>
-                    </button>
-                    <button class="voice-btn" data-voice="cosmos">
-                        <span class="voice-name">Cosmos</span>
-                        <span class="voice-desc">Deep</span>
-                    </button>
-                    <button class="voice-btn" data-voice="eclipse">
-                        <span class="voice-name">Eclipse</span>
-                        <span class="voice-desc">Mysterious</span>
-                    </button>
-                </div>
+<body id="top">
+
+    <!-- Voice Panel Toggle Button -->
+    <button id="toggleAudioPanel" class="voice-panel-toggle">🎙️</button>
+
+    <!-- Voice Control Panel (Overlay) -->
+    <div class="voice-control-panel" id="audioPanel">
+        <div class="voice-selection">
+            <h4>Cosmic Voice</h4>
+            <div class="voice-options">
+                <button class="voice-btn active" data-voice="nova">
+                    <span class="voice-name">Nova</span>
+                    <span class="voice-desc">Ethereal</span>
+                </button>
+                <button class="voice-btn" data-voice="stellar">
+                    <span class="voice-name">Stellar</span>
+                    <span class="voice-desc">Futuristic</span>
+                </button>
+                <button class="voice-btn" data-voice="cosmos">
+                    <span class="voice-name">Cosmos</span>
+                    <span class="voice-desc">Deep</span>
+                </button>
+                <button class="voice-btn" data-voice="eclipse">
+                    <span class="voice-name">Eclipse</span>
+                    <span class="voice-desc">Mysterious</span>
+                </button>
             </div>
-            <div class="audio-settings">
-                <div class="setting-row">
-                    <label>Volume</label>
-                    <input type="range" id="volumeSlider" class="cosmic-slider" min="0" max="100" value="70">
-                    <button id="muteBtn" class="audio-btn">🔊</button>
-                </div>
+        </div>
+        <div class="audio-settings">
+            <div class="setting-row">
+                <label>Volume</label>
+                <input type="range" id="volumeSlider" class="cosmic-slider" min="0" max="100" value="70">
+                <button id="muteBtn" class="audio-btn">🔊</button>
             </div>
-            <div class="connection-status">
-                <div class="status-indicator" id="connectionStatus">
-                    <span class="status-dot"></span>
-                    <span class="status-text">Connecting to Kyutai...</span>
-                </div>
+        </div>
+        <div class="connection-status">
+            <div class="status-indicator" id="connectionStatus">
+                <span class="status-dot"></span>
+                <span class="status-text">Connecting to Kyutai...</span>
             </div>
         </div>
     </div>
+
 
     <!-- Audio Visualizer -->
     <div class="audio-visualizer" id="audioVisualizer">
@@ -301,6 +303,50 @@
         </div>
     </section>
 
+    <!-- AI Business Analyst Section -->
+    <section class="ai-analyst-section" id="ai-analyst" data-narrate="aiAnalyst">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">AI Business Analyst</h2>
+                <p class="section-subtitle">Let our AI analyze your business needs and recommend the perfect cosmic services to achieve your goals.</p>
+            </div>
+            <div class="analyst-interface">
+                <form id="aiAnalystForm" class="analyst-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="businessIndustry">Your Industry</label>
+                            <select id="businessIndustry" name="business_industry" required>
+                                <option value="">Select your industry...</option>
+                                <option value="tech">Technology & SaaS</option>
+                                <option value="ecommerce">E-commerce & Retail</option>
+                                <option value="healthcare">Healthcare & Wellness</option>
+                                <option value="finance">Finance & FinTech</option>
+                                <option value="politics">Political & Non-Profit</option>
+                                <option value="creative">Creative & Media</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="businessChallenges">Describe your primary challenges</label>
+                        <textarea id="businessChallenges" name="business_challenges" rows="4" placeholder="e.g., 'We need a new brand identity', 'Our website has low user engagement', 'Struggling with content creation'..." required></textarea>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="submit-btn" id="analyzeBtn">
+                            <span class="btn-text">Analyze My Business 🚀</span>
+                            <div class="btn-loading">
+                                <div class="cosmic-spinner"></div>
+                            </div>
+                        </button>
+                    </div>
+                </form>
+                <div id="aiResults" class="analyst-results">
+                    <!-- Recommendations will be injected here by app.js -->
+                </div>
+            </div>
+        </div>
+    </section>
+
     <!-- About Section -->
     <section class="about-section" id="about" data-narrate="about">
         <div class="container">
@@ -451,6 +497,18 @@
 
     <!-- Cursor Trail -->
     <div class="cursor-trail" id="cursorTrail"></div>
+
+    <footer class="site-footer">
+        <div class="container">
+            <div class="footer-content">
+                <a href="#top" class="footer-logo">LUNAI</a>
+                <p class="footer-tagline">Digital Excellence | Eclipse of Tomorrow</p>
+                <p class="footer-copyright">
+                    © 2025 Lunai. All rights reserved. <br class="mobile-break"> Built with cosmic precision and infinite innovation.
+                </p>
+            </div>
+        </div>
+    </footer>
 
     <script src="app.js"></script>
 </body>
