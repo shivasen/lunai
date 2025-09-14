@@ -3,13 +3,60 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lunai - Eclipse of Tomorrow | Enhanced with Kyutai TTS</title>
+    
+    <!-- Primary Meta Tags -->
+    <title>Lunai - Cosmic Digital Excellence | AI Voice & Strategic Branding</title>
+    <meta name="title" content="Lunai - Cosmic Digital Excellence | AI Voice & Strategic Branding">
+    <meta name="description" content="Transform your digital presence with Lunai's cosmic approach to AI voice synthesis, strategic branding, and comprehensive digital solutions. Experience the future of innovation.">
+    <meta name="keywords" content="AI Voice Synthesis, Strategic Branding, Digital Excellence, Web Development, Creative Content, Political Campaigns, Research Intelligence, Cosmic Design">
+    <meta name="robots" content="index, follow">
+    <meta name="language" content="English">
+    <meta name="author" content="Lunai">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://lunai.com/">
+    <meta property="og:title" content="Lunai - Cosmic Digital Excellence | AI Voice & Strategic Branding">
+    <meta property="og:description" content="Transform your digital presence with Lunai's cosmic approach to AI voice synthesis, strategic branding, and comprehensive digital solutions.">
+    <meta property="og:image" content="https://lunai.com/og-image.png">
+    <meta property="og:site_name" content="Lunai">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://lunai.com/">
+    <meta property="twitter:title" content="Lunai - Cosmic Digital Excellence | AI Voice & Strategic Branding">
+    <meta property="twitter:description" content="Transform your digital presence with Lunai's cosmic approach to AI voice synthesis, strategic branding, and comprehensive digital solutions.">
+    <meta property="twitter:image" content="https://lunai.com/twitter-image.png">
+
+    <!-- Additional SEO -->
+    <link rel="canonical" href="https://lunai.com/">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+    <!-- JSON-LD Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization", 
+      "name": "Lunai",
+      "url": "https://lunai.com",
+      "logo": "https://lunai.com/logo.png",
+      "description": "Cosmic digital excellence through AI voice synthesis and strategic branding",
+      "sameAs": [
+        "https://www.linkedin.com/company/lunai",
+        "https://twitter.com/lunai"
+      ],
+      "contactPoint": {
+        "@type": "ContactPoint",
+        "contactType": "sales",
+        "email": "hello@lunai.com"
+      }
+    }
+    </script>
+
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Exo+2:wght@300;400;500;600&display=swap" rel="stylesheet">
-    <!-- Three.js for 3D Background -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+    <!-- EmailJS SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 </head>
 <body>
     <!-- Enhanced Audio Controls with Voice Selection -->
@@ -74,15 +121,6 @@
         </div>
     </div>
 
-    <!-- 3D Background Canvas -->
-    <canvas id="threejs-canvas" class="threejs-background loading"></canvas>
-    
-    <!-- 3D Model Loading Indicator -->
-    <div id="model-loading" class="model-loading-indicator">
-        <div class="loading-spinner"></div>
-        <p>Loading Wonderful World...</p>
-    </div>
-    
     <!-- Starfield Background -->
     <div class="starfield" id="starfield"></div>
 
@@ -123,6 +161,154 @@
         </div>
     </section>
 
+    <!-- Services Section -->
+    <section class="services-section" id="services" data-narrate="services">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Cosmic Services Excellence</h2>
+                <p class="section-subtitle">Transform your vision into cosmic reality with our comprehensive suite of professional services</p>
+            </div>
+            <div class="services-grid" id="servicesGrid">
+                <!-- Strategic Branding Excellence -->
+                <div class="service-card" data-service="branding" data-aos="float-up" data-delay="0">
+                    <div class="service-icon">⭐</div>
+                    <h3 class="service-title">Strategic Branding Excellence</h3>
+                    <p class="service-description">Elevate your brand identity across all dimensional planes</p>
+                    <div class="service-expand-btn" data-expand="branding">
+                        <span>Explore Services</span>
+                        <div class="expand-arrow">▼</div>
+                    </div>
+                    <div class="service-list" id="brandingServices">
+                        <ul>
+                            <li>Brand Strategy Development</li>
+                            <li>Naming & Identity</li>
+                            <li>Visual Identity + Logo Design</li>
+                            <li>Custom Typography</li>
+                            <li>Comprehensive Brand Guidelines</li>
+                            <li>Verbal Identity Systems</li>
+                            <li>Premium Packaging Design</li>
+                        </ul>
+                    </div>
+                    <div class="card-glow"></div>
+                </div>
+
+                <!-- Strategic Research & Intelligence -->
+                <div class="service-card" data-service="research" data-aos="float-up" data-delay="200">
+                    <div class="service-icon">🔍</div>
+                    <h3 class="service-title">Strategic Research & Intelligence</h3>
+                    <p class="service-description">Deep cosmic insights to guide strategic decisions</p>
+                    <div class="service-expand-btn" data-expand="research">
+                        <span>Explore Services</span>
+                        <div class="expand-arrow">▼</div>
+                    </div>
+                    <div class="service-list" id="researchServices">
+                        <ul>
+                            <li>Market Research & Analysis</li>
+                            <li>Business Intelligence</li>
+                            <li>Brand + Content Audits</li>
+                            <li>Co-Creation Workshops</li>
+                            <li>Survey Development + Analysis</li>
+                            <li>Customer Journey Mapping</li>
+                            <li>Audience + Competitor Intelligence</li>
+                        </ul>
+                    </div>
+                    <div class="card-glow"></div>
+                </div>
+
+                <!-- Comprehensive Strategy Development -->
+                <div class="service-card" data-service="strategy" data-aos="float-up" data-delay="400">
+                    <div class="service-icon">🧭</div>
+                    <h3 class="service-title">Comprehensive Strategy Development</h3>
+                    <p class="service-description">Navigate the cosmic landscape of business innovation</p>
+                    <div class="service-expand-btn" data-expand="strategy">
+                        <span>Explore Services</span>
+                        <div class="expand-arrow">▼</div>
+                    </div>
+                    <div class="service-list" id="strategyServices">
+                        <ul>
+                            <li>Business Model Innovation</li>
+                            <li>Brand & Business Frameworks</li>
+                            <li>Audience + User Profiling</li>
+                            <li>UI/UX Strategy</li>
+                            <li>Digital & Social Media Strategy</li>
+                            <li>Content Strategy</li>
+                            <li>Campaign + Launch Strategy</li>
+                        </ul>
+                    </div>
+                    <div class="card-glow"></div>
+                </div>
+
+                <!-- Political Campaign Excellence -->
+                <div class="service-card" data-service="political" data-aos="float-up" data-delay="600">
+                    <div class="service-icon">🏛️</div>
+                    <h3 class="service-title">Political Campaign Excellence</h3>
+                    <p class="service-description">Stellar campaigns that resonate across all demographics</p>
+                    <div class="service-expand-btn" data-expand="political">
+                        <span>Explore Services</span>
+                        <div class="expand-arrow">▼</div>
+                    </div>
+                    <div class="service-list" id="politicalServices">
+                        <ul>
+                            <li>Political Campaign Strategy</li>
+                            <li>Concept + Creative Development</li>
+                            <li>Marketing & Engagement Strategy</li>
+                            <li>Event Collateral Design</li>
+                            <li>Social Media Asset Development</li>
+                            <li>Editorial Calendar Management</li>
+                        </ul>
+                    </div>
+                    <div class="card-glow"></div>
+                </div>
+
+                <!-- Digital Web Excellence -->
+                <div class="service-card" data-service="digital" data-aos="float-up" data-delay="800">
+                    <div class="service-icon">🌐</div>
+                    <h3 class="service-title">Digital Web Excellence</h3>
+                    <p class="service-description">Cosmic web experiences that transcend digital boundaries</p>
+                    <div class="service-expand-btn" data-expand="digital">
+                        <span>Explore Services</span>
+                        <div class="expand-arrow">▼</div>
+                    </div>
+                    <div class="service-list" id="digitalServices">
+                        <ul>
+                            <li>Information Architecture</li>
+                            <li>UX Strategy</li>
+                            <li>Content Strategy</li>
+                            <li>Accessibility Compliance</li>
+                            <li>Responsive Development</li>
+                            <li>CMS + Back-End Integration</li>
+                        </ul>
+                    </div>
+                    <div class="card-glow"></div>
+                </div>
+
+                <!-- Content + Creative Excellence -->
+                <div class="service-card" data-service="content" data-aos="float-up" data-delay="1000">
+                    <div class="service-icon">✨</div>
+                    <h3 class="service-title">Content + Creative Excellence</h3>
+                    <p class="service-description">Creative content that illuminates across all mediums</p>
+                    <div class="service-expand-btn" data-expand="content">
+                        <span>Explore Services</span>
+                        <div class="expand-arrow">▼</div>
+                    </div>
+                    <div class="service-list" id="contentServices">
+                        <ul>
+                            <li>Strategic Content Development</li>
+                            <li>Professional Copywriting</li>
+                            <li>Editorial Excellence</li>
+                            <li>Video + Animation</li>
+                            <li>Custom Illustration</li>
+                            <li>Data Visualization + Infographics</li>
+                            <li>Professional Photography + Editing</li>
+                            <li>Typography + Design</li>
+                        </ul>
+                    </div>
+                    <div class="card-glow"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <!-- About Section -->
     <section class="about-section" id="about" data-narrate="about">
         <div class="container">
@@ -153,68 +339,26 @@
         </div>
     </section>
 
-    <!-- Features Section -->
+    <!-- Updated Features Section with Ra Lunai AI -->
     <section class="features-section" id="features" data-narrate="features">
         <div class="container">
             <h2 class="section-title">Celestial Technologies</h2>
-            <div class="carousel-container">
-                <div class="feature-carousel" id="featureCarousel">
-                    <div class="carousel-item active" data-feature="0">
-                        <div class="feature-3d-card">
-                            <div class="card-face front">
-                                <h3>Celestial Interface</h3>
-                                <span class="highlight-badge">AI-Powered</span>
-                                <p>Navigate through space with intuitive cosmic controls powered by advanced AI</p>
-                            </div>
-                            <div class="card-face back">
-                                <div class="tech-details">
-                                    <div class="circuit-pattern"></div>
-                                    <div class="data-stream"></div>
-                                </div>
-                            </div>
-                        </div>
+            <div class="ra-lunai-container">
+                <div class="ra-lunai-feature" data-aos="float-up" data-delay="0">
+                    <div class="cosmic-icon">🌟</div>
+                    <h3 class="ra-lunai-title">Ra Lunai AI</h3>
+                    <p class="ra-lunai-description">Revolutionary AI system coming soon to transform your digital universe</p>
+                    <div class="coming-soon-badge">Coming Soon</div>
+                    <div class="cosmic-effects">
+                        <div class="cosmic-ring"></div>
+                        <div class="cosmic-particles"></div>
                     </div>
-                    <div class="carousel-item" data-feature="1">
-                        <div class="feature-3d-card">
-                            <div class="card-face front">
-                                <h3>Kyutai Voice Synthesis</h3>
-                                <span class="highlight-badge">Ultra-Low Latency</span>
-                                <p>Real-time streaming audio synthesis with 220ms response time</p>
-                            </div>
-                            <div class="card-face back">
-                                <div class="tech-details">
-                                    <div class="orbit-pattern"></div>
-                                    <div class="data-pulse"></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="carousel-item" data-feature="2">
-                        <div class="feature-3d-card">
-                            <div class="card-face front">
-                                <h3>Eclipse Mode</h3>
-                                <span class="highlight-badge">Adaptive</span>
-                                <p>Dark theme that adapts to your cosmic journey with voice synchronization</p>
-                            </div>
-                            <div class="card-face back">
-                                <div class="tech-details">
-                                    <div class="eclipse-animation"></div>
-                                    <div class="phase-indicator"></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="carousel-nav">
-                    <button class="nav-dot active" data-slide="0"></button>
-                    <button class="nav-dot" data-slide="1"></button>
-                    <button class="nav-dot" data-slide="2"></button>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Vision Section -->
+    <!-- Updated Vision Section with South Indian Testimonials -->
     <section class="vision-section" id="vision">
         <div class="container">
             <h2 class="section-title">Cosmic Testimonials</h2>
@@ -222,29 +366,29 @@
                 <div class="testimonial-star" data-aos="constellation" data-delay="0">
                     <div class="star-glow"></div>
                     <div class="testimonial-content">
-                        <p>"Lunai transformed our digital presence into something truly otherworldly. The voice synthesis is incredible."</p>
-                        <cite>Dr. Sarah Chen, Astrophysicist</cite>
+                        <p>"Lunai's innovative approach to voice synthesis and branding excellence has revolutionized our digital transformation initiatives. The cosmic design philosophy resonates perfectly with our vision for the future."</p>
+                        <cite>Dr. Priya Krishnamurthy, AI Research Director, Chennai Tech Labs</cite>
                     </div>
                 </div>
                 <div class="testimonial-star" data-aos="constellation" data-delay="300">
                     <div class="star-glow"></div>
                     <div class="testimonial-content">
-                        <p>"The future of digital design is here, and it speaks with celestial beauty"</p>
-                        <cite>Marcus Rivera, Creative Director</cite>
+                        <p>"The seamless integration of AI voice technology with stunning visual design makes Lunai a standout choice. Their strategic branding services have elevated our client presentations to new heights."</p>
+                        <cite>Rajesh Nair, Creative Director, Bangalore Digital Studios</cite>
                     </div>
                 </div>
                 <div class="testimonial-star" data-aos="constellation" data-delay="600">
                     <div class="star-glow"></div>
                     <div class="testimonial-content">
-                        <p>"Like stepping into a cosmic dream guided by the voice of the universe"</p>
-                        <cite>Elena Volkov, Tech Innovator</cite>
+                        <p>"Working with Lunai has been transformative. Their comprehensive approach to digital excellence and cosmic user experiences sets them apart in the industry. Truly visionary work."</p>
+                        <cite>Kavitha Reddy, Innovation Lead, Hyderabad Smart Solutions</cite>
                     </div>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Contact Section -->
+    <!-- Updated Contact Section with Centered Layout -->
     <section class="contact-section" id="contact" data-narrate="contact">
         <div class="container">
             <div class="contact-platform">
@@ -252,26 +396,61 @@
                 <div class="contact-content">
                     <h2 class="section-title">Join the Eclipse</h2>
                     <p class="section-subtitle">Ready to begin your cosmic journey with voice-guided navigation?</p>
-                    <form class="contact-form" id="contactForm">
+                    
+                    <!-- Enhanced Contact Form with EmailJS -->
+                    <form class="contact-form" id="contactForm" data-emailjs="true">
+                        <!-- Honeypot for spam protection -->
+                        <input type="text" name="honeypot" style="display: none;" tabindex="-1" autocomplete="off">
+                        
+                        <!-- Hidden field for template -->
+                        <input type="hidden" name="to_email" value="your-email@domain.com">
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <input type="text" id="contactName" name="from_name" required data-speak-on-focus="true">
+                                <label for="contactName">Your Name</label>
+                                <div class="input-glow"></div>
+                            </div>
+                            <div class="form-group">
+                                <input type="email" id="contactEmail" name="reply_to" required data-speak-on-focus="true">
+                                <label for="contactEmail">Email Address</label>
+                                <div class="input-glow"></div>
+                            </div>
+                        </div>
+                        
                         <div class="form-group">
-                            <label for="name">Name</label>
-                            <input type="text" id="name" name="name" required data-speak-on-focus="true">
+                            <select id="contactInterest" name="interest_area" required data-speak-on-focus="true">
+                                <option value="">Select Your Interest</option>
+                                <option value="strategic-branding">Strategic Branding Excellence</option>
+                                <option value="research-intelligence">Strategic Research & Intelligence</option>
+                                <option value="strategy-development">Comprehensive Strategy Development</option>
+                                <option value="political-campaigns">Political Campaign Excellence</option>
+                                <option value="digital-web">Digital Web Excellence</option>
+                                <option value="content-creative">Content + Creative Excellence</option>
+                                <option value="other">Other Inquiries</option>
+                            </select>
+                            <label for="contactInterest">Area of Interest</label>
                             <div class="input-glow"></div>
                         </div>
+                        
                         <div class="form-group">
-                            <label for="email">Email</label>
-                            <input type="email" id="email" name="email" required data-speak-on-focus="true">
+                            <textarea id="contactMessage" name="message" rows="4" required data-speak-on-focus="true"></textarea>
+                            <label for="contactMessage">Your Message</label>
                             <div class="input-glow"></div>
                         </div>
-                        <div class="form-group">
-                            <label for="message">Message</label>
-                            <textarea id="message" name="message" rows="4" required data-speak-on-focus="true"></textarea>
-                            <div class="input-glow"></div>
+                        
+                        <div class="form-actions">
+                            <button type="submit" class="submit-btn" id="submitBtn">
+                                <span class="btn-text">Launch Your Message</span>
+                                <div class="btn-loading" id="btnLoading">
+                                    <div class="cosmic-spinner"></div>
+                                </div>
+                                <div class="btn-ripple"></div>
+                            </button>
                         </div>
-                        <button type="submit" class="submit-btn" id="submitBtn" data-narrate="true">
-                            <span>Launch Into Tomorrow</span>
-                            <div class="btn-burst"></div>
-                        </button>
+                        
+                        <!-- Form Messages -->
+                        <div class="form-message" id="formMessage"></div>
                     </form>
                 </div>
             </div>

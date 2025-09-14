@@ -1,727 +1,136 @@
-// Lunai 3D Landing Page - Enhanced with Kyutai TTS and 3D Background
-// Eclipse of Tomorrow - Refined Logo with Chrome Finish and Clear Visibility
+// Lunai 3D Landing Page - Final Optimized Version with All Requirements
+// FIXED: Contact form dropdown functionality
 
-// 3D Background Manager using Three.js with GLB Model Support
-class ThreeJSBackground {
-  constructor() {
-    this.scene = null;
-    this.camera = null;
-    this.renderer = null;
-    this.canvas = null;
-    this.animationId = null;
-    this.mouseX = 0;
-    this.mouseY = 0;
-    this.particles = [];
-    this.geometries = [];
-    this.materials = [];
-    this.meshes = [];
-    this.time = 0;
-    this.gltfLoader = null;
-    this.wonderfulWorldModel = null;
-    this.modelLoaded = false;
-    
-    this.init();
-  }
-  
-  init() {
-    // Get canvas element
-    this.canvas = document.getElementById('threejs-canvas');
-    if (!this.canvas) {
-      console.warn('Three.js canvas element not found');
-      return;
+// SETUP INSTRUCTIONS FOR EMAILJS:
+// 
+// 1. Create account at https://www.emailjs.com/
+// 2. Add email service (Gmail, Outlook, etc.)
+// 3. Create email template with these variables:
+//    - {{from_name}} - Sender's name
+//    - {{reply_to}} - Sender's email  
+//    - {{interest_area}} - Selected interest area
+//    - {{message}} - Message content
+//    - {{to_email}} - Your receiving email
+// 4. Get your Public Key, Service ID, and Template ID
+// 5. Replace the placeholder values in EMAIL_CONFIG below:
+
+const EMAIL_CONFIG = {
+    publicKey: 'YOUR_PUBLIC_KEY_HERE',     // Replace with your EmailJS public key
+    serviceId: 'YOUR_SERVICE_ID_HERE',     // Replace with your EmailJS service ID
+    templateId: 'YOUR_TEMPLATE_ID_HERE'    // Replace with your EmailJS template ID
+};
+
+// EmailJS Manager Class for Professional Email Handling
+class EmailManager {
+    constructor() {
+        this.config = EMAIL_CONFIG;
+        this.isInitialized = false;
+        this.rateLimitCount = 0;
+        this.rateLimitWindow = 60000; // 1 minute
+        this.maxEmailsPerWindow = 3;
     }
-    
-    try {
-      this.setupScene();
-      this.setupLoader();
-      this.addTestCube(); // Add a test cube to verify Three.js is working
-      this.loadWonderfulWorldModel();
-      this.createParticleSystem();
-      this.createNebula();
-      this.setupLighting();
-      this.setupEventListeners();
-      this.animate();
-      console.log('Three.js 3D background initialized successfully');
-    } catch (error) {
-      console.warn('Three.js initialization failed:', error);
-    }
-  }
-  
-  addTestCube() {
-    // Add a simple test cube to verify Three.js rendering
-    const geometry = new THREE.BoxGeometry(2, 2, 2);
-    const material = new THREE.MeshPhongMaterial({ 
-      color: 0x00ff00,
-      emissive: 0x002200,
-      emissiveIntensity: 0.5
-    });
-    const testCube = new THREE.Mesh(geometry, material);
-    testCube.position.set(-8, 0, 0); // Position to the left
-    
-    testCube.userData = {
-      rotationSpeed: { x: 0.01, y: 0.01, z: 0 }
-    };
-    
-    this.scene.add(testCube);
-    this.meshes.push(testCube);
-    this.geometries.push(geometry);
-    this.materials.push(material);
-    
-    console.log('Test cube added at position:', testCube.position);
-  }
-  
-  setupScene() {
-    // Create scene
-    this.scene = new THREE.Scene();
-    this.scene.fog = new THREE.FogExp2(0x000000, 0.0002); // Much lighter fog for better model visibility
-    
-    // Create camera with better positioning for the model
-    this.camera = new THREE.PerspectiveCamera(
-      60, // Reduced FOV for better view
-      window.innerWidth / window.innerHeight,
-      0.1,
-      2000 // Increased far clipping for large models
-    );
-    this.camera.position.set(0, 5, 15); // Better position to see the whole model
-    this.camera.lookAt(0, 0, 0); // Look at scene center
-    
-    // Create renderer with enhanced settings
-    this.renderer = new THREE.WebGLRenderer({
-      canvas: this.canvas,
-      antialias: true,
-      alpha: true,
-      powerPreference: "high-performance"
-    });
-    this.renderer.setSize(window.innerWidth, window.innerHeight);
-    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    this.renderer.setClearColor(0x000000, 0);
-    this.renderer.shadowMap.enabled = true;
-    this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-    this.renderer.outputEncoding = THREE.sRGBEncoding; // Better color reproduction
-    this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    this.renderer.toneMappingExposure = 1.2; // Brighter exposure
-  }
-  
-  setupLoader() {
-    // Initialize GLTF Loader
-    this.gltfLoader = new THREE.GLTFLoader();
-  }
-  
-  loadWonderfulWorldModel() {
-    console.log('Loading wonderful_world.glb model...');
-    
-    // Show loading indicator
-    const loadingIndicator = document.getElementById('model-loading');
-    const canvas = document.getElementById('threejs-canvas');
-    
-    this.gltfLoader.load(
-      './wonderful_world.glb',
-      (gltf) => {
-        console.log('GLB model loaded successfully:', gltf);
-        console.log('Model scene children:', gltf.scene.children.length);
-        
-        this.wonderfulWorldModel = gltf.scene;
-        
-        // Debug: Log model properties before setup
-        console.log('Model before setup - Position:', this.wonderfulWorldModel.position);
-        console.log('Model before setup - Scale:', this.wonderfulWorldModel.scale);
-        console.log('Model before setup - Visible:', this.wonderfulWorldModel.visible);
-        
-        // Configure the model
-        this.setupModel();
-        
-        // Debug: Log model properties after setup
-        console.log('Model after setup - Position:', this.wonderfulWorldModel.position);
-        console.log('Model after setup - Scale:', this.wonderfulWorldModel.scale);
-        console.log('Model after setup - Visible:', this.wonderfulWorldModel.visible);
-        
-        // Add to scene
-        this.scene.add(this.wonderfulWorldModel);
-        this.modelLoaded = true;
-        
-        // Debug: Check scene contents
-        console.log('Scene children after adding model:', this.scene.children.length);
-        
-        // Add model to meshes for animation
-        this.meshes.push(this.wonderfulWorldModel);
-        
-        // Force a render to see if model appears
-        if (this.renderer && this.scene && this.camera) {
-          this.renderer.render(this.scene, this.camera);
-          console.log('Forced initial render completed');
-        }
-        
-        // Hide loading indicator and show canvas
-        if (loadingIndicator) {
-          loadingIndicator.classList.add('hidden');
-          setTimeout(() => {
-            loadingIndicator.style.display = 'none';
-          }, 500);
-        }
-        
-        if (canvas) {
-          canvas.classList.remove('loading');
-          canvas.classList.add('loaded');
-        }
-        
-        console.log('Wonderful World model setup complete and added to scene');
-      },
-      (progress) => {
-        const percent = Math.round((progress.loaded / progress.total * 100));
-        console.log('Loading progress:', percent + '%');
-        
-        // Update loading text
-        if (loadingIndicator) {
-          const loadingText = loadingIndicator.querySelector('p');
-          if (loadingText) {
-            loadingText.textContent = `Loading Wonderful World... ${percent}%`;
-          }
-        }
-      },
-      (error) => {
-        console.error('Error loading GLB model:', error);
-        
-        // Hide loading indicator
-        if (loadingIndicator) {
-          loadingIndicator.classList.add('hidden');
-          setTimeout(() => {
-            loadingIndicator.style.display = 'none';
-          }, 500);
-        }
-        
-        // Show canvas even if model fails
-        if (canvas) {
-          canvas.classList.remove('loading');
-          canvas.classList.add('loaded');
-        }
-        
-        // Fallback to procedural geometry if model fails to load
-        this.createFallbackGeometry();
-      }
-    );
-  }
-  
-  setupModel() {
-    if (!this.wonderfulWorldModel) return;
-    
-    // First, let's analyze the model size and center it properly
-    const box = new THREE.Box3().setFromObject(this.wonderfulWorldModel);
-    const center = box.getCenter(new THREE.Vector3());
-    const size = box.getSize(new THREE.Vector3());
-    
-    console.log('Model size:', size);
-    console.log('Model center:', center);
-    
-    // Center the model
-    this.wonderfulWorldModel.position.sub(center);
-    
-    // Scale the model based on its current size
-    const maxDimension = Math.max(size.x, size.y, size.z);
-    const desiredSize = 8; // Desired size for visibility
-    const scale = desiredSize / maxDimension;
-    this.wonderfulWorldModel.scale.setScalar(scale);
-    
-    // Position the model for better visibility
-    this.wonderfulWorldModel.position.set(0, 0, 0);
-    
-    console.log('Applied scale:', scale);
-    console.log('Final position:', this.wonderfulWorldModel.position);
-    
-    // Configure materials for visibility
-    this.wonderfulWorldModel.traverse((child) => {
-      if (child.isMesh) {
-        child.castShadow = true;
-        child.receiveShadow = true;
-        
-        // Force material visibility
-        if (child.material) {
-          // Handle different material types
-          if (Array.isArray(child.material)) {
-            child.material.forEach(mat => this.enhanceMaterial(mat));
-          } else {
-            this.enhanceMaterial(child.material);
-          }
-        }
-      }
-    });
-    
-    // Store animation data
-    this.wonderfulWorldModel.userData = {
-      originalRotation: {
-        x: this.wonderfulWorldModel.rotation.x,
-        y: this.wonderfulWorldModel.rotation.y,
-        z: this.wonderfulWorldModel.rotation.z
-      },
-      rotationSpeed: {
-        x: 0,
-        y: 0.005, // Slightly faster rotation for visibility
-        z: 0
-      }
-    };
-    
-    // Make sure model is visible by checking its visibility
-    this.wonderfulWorldModel.visible = true;
-    console.log('Model setup complete. Visible:', this.wonderfulWorldModel.visible);
-    
-    // Add debug helper - temporary wireframe toggle
-    window.toggleWireframe = () => {
-      if (this.wonderfulWorldModel) {
-        this.wonderfulWorldModel.traverse((child) => {
-          if (child.isMesh && child.material) {
-            if (Array.isArray(child.material)) {
-              child.material.forEach(mat => {
-                mat.wireframe = !mat.wireframe;
-                mat.needsUpdate = true;
-              });
-            } else {
-              child.material.wireframe = !child.material.wireframe;
-              child.material.needsUpdate = true;
+
+    async initialize() {
+        if (typeof emailjs !== 'undefined' && this.config.publicKey !== 'YOUR_PUBLIC_KEY_HERE') {
+            try {
+                emailjs.init({ publicKey: this.config.publicKey });
+                this.isInitialized = true;
+                console.log('EmailJS initialized successfully');
+                return true;
+            } catch (error) {
+                console.error('EmailJS initialization failed:', error);
+                return false;
             }
-          }
-        });
-        console.log('Wireframe toggled');
-      }
-    };
-    
-    // Add debug info to console
-    console.log('Model debug info:');
-    console.log('- Position:', this.wonderfulWorldModel.position);
-    console.log('- Scale:', this.wonderfulWorldModel.scale);
-    console.log('- Rotation:', this.wonderfulWorldModel.rotation);
-    console.log('- Visible:', this.wonderfulWorldModel.visible);
-    console.log('- Children count:', this.wonderfulWorldModel.children.length);
-    console.log('Call toggleWireframe() in console to see wireframe mode');
-  }
-  
-  enhanceMaterial(material) {
-    // Ensure material is visible and properly lit
-    material.transparent = false;
-    material.opacity = 1.0;
-    material.side = THREE.DoubleSide; // Render both sides
-    material.wireframe = false; // Ensure solid rendering
-    
-    // Force bright colors for visibility
-    if (material.color) {
-      material.color.multiplyScalar(1.5); // Brighten existing colors
+        }
+        console.warn('EmailJS not configured. Please update EMAIL_CONFIG with your credentials.');
+        return false;
     }
-    
-    // Add strong emission for visibility in dark scenes
-    if (material.emissive) {
-      material.emissive.setHex(0x223344);
-      material.emissiveIntensity = 0.4;
-    } else {
-      // If no emissive, try to add one
-      material.emissive = new THREE.Color(0x223344);
-      material.emissiveIntensity = 0.4;
+
+    validateForm(formData) {
+        const errors = [];
+        
+        if (!formData.from_name || formData.from_name.trim().length < 2) {
+            errors.push('Name must be at least 2 characters');
+        }
+        
+        if (!formData.reply_to || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.reply_to)) {
+            errors.push('Please enter a valid email address');
+        }
+        
+        if (!formData.interest_area) {
+            errors.push('Please select your area of interest');
+        }
+        
+        if (!formData.message || formData.message.trim().length < 10) {
+            errors.push('Message must be at least 10 characters long');
+        }
+
+        // Check honeypot for spam
+        if (formData.honeypot && formData.honeypot.trim() !== '') {
+            errors.push('Spam detected');
+        }
+        
+        return errors;
     }
-    
-    // Enhance metallic/roughness if available (PBR materials)
-    if (material.metalness !== undefined) {
-      material.metalness = 0.2;
+
+    checkRateLimit() {
+        const now = Date.now();
+        const windowStart = now - this.rateLimitWindow;
+        
+        // Reset counter if window has passed
+        if (this.lastReset < windowStart) {
+            this.rateLimitCount = 0;
+            this.lastReset = now;
+        }
+        
+        if (this.rateLimitCount >= this.maxEmailsPerWindow) {
+            return false;
+        }
+        
+        return true;
     }
-    if (material.roughness !== undefined) {
-      material.roughness = 0.7;
-    }
-    
-    // Ensure material receives light properly
-    material.flatShading = false;
-    
-    // Force material update
-    material.needsUpdate = true;
-    
-    console.log('Enhanced material:', material.type, 'Emissive:', material.emissive, 'Color:', material.color);
-  }
-  
-  createFallbackGeometry() {
-    console.log('Creating fallback geometry...');
-    // Create simple floating shapes as fallback
-    this.createFloatingShapes();
-  }
-  
-  createFloatingShapes() {
-    const shapes = [
-      { geometry: new THREE.IcosahedronGeometry(0.5, 1), count: 8 },
-      { geometry: new THREE.OctahedronGeometry(0.3), count: 12 },
-      { geometry: new THREE.TetrahedronGeometry(0.4), count: 6 },
-      { geometry: new THREE.BoxGeometry(0.4, 0.4, 0.4), count: 10 }
-    ];
-    
-    shapes.forEach((shapeConfig, shapeIndex) => {
-      for (let i = 0; i < shapeConfig.count; i++) {
-        const material = new THREE.MeshPhongMaterial({
-          color: new THREE.Color().setHSL(
-            (shapeIndex * 0.25 + Math.random() * 0.1) % 1,
-            0.7,
-            0.5 + Math.random() * 0.3
-          ),
-          transparent: true,
-          opacity: 0.6 + Math.random() * 0.4,
-          wireframe: Math.random() > 0.7
-        });
-        
-        const mesh = new THREE.Mesh(shapeConfig.geometry, material);
-        
-        // Random positioning in 3D space
-        mesh.position.set(
-          (Math.random() - 0.5) * 20,
-          (Math.random() - 0.5) * 20,
-          (Math.random() - 0.5) * 20
-        );
-        
-        // Random rotation
-        mesh.rotation.set(
-          Math.random() * Math.PI * 2,
-          Math.random() * Math.PI * 2,
-          Math.random() * Math.PI * 2
-        );
-        
-        // Random scale
-        const scale = 0.5 + Math.random() * 1.5;
-        mesh.scale.set(scale, scale, scale);
-        
-        // Store animation properties
-        mesh.userData = {
-          rotationSpeed: {
-            x: (Math.random() - 0.5) * 0.02,
-            y: (Math.random() - 0.5) * 0.02,
-            z: (Math.random() - 0.5) * 0.02
-          },
-          floatSpeed: Math.random() * 0.01 + 0.005,
-          originalY: mesh.position.y
+
+    async sendEmail(formData) {
+        if (!this.isInitialized) {
+            throw new Error('EmailJS not initialized. Please configure your credentials.');
+        }
+
+        if (!this.checkRateLimit()) {
+            throw new Error('Rate limit exceeded. Please wait before sending another message.');
+        }
+
+        // Validate form data
+        const errors = this.validateForm(formData);
+        if (errors.length > 0) {
+            throw new Error(errors.join(', '));
+        }
+
+        // Prepare email data
+        const emailData = {
+            from_name: formData.from_name.trim(),
+            reply_to: formData.reply_to.trim().toLowerCase(),
+            interest_area: formData.interest_area,
+            message: formData.message.trim(),
+            to_email: formData.to_email || 'your-email@domain.com',
+            sent_at: new Date().toLocaleString(),
+            user_agent: navigator.userAgent
         };
-        
-        this.scene.add(mesh);
-        this.meshes.push(mesh);
-        this.geometries.push(shapeConfig.geometry);
-        this.materials.push(material);
-      }
-    });
-  }
-  
-  createParticleSystem() {
-    const particleCount = 1000;
-    const positions = new Float32Array(particleCount * 3);
-    const colors = new Float32Array(particleCount * 3);
-    const sizes = new Float32Array(particleCount);
-    
-    for (let i = 0; i < particleCount; i++) {
-      const i3 = i * 3;
-      
-      // Positions
-      positions[i3] = (Math.random() - 0.5) * 100;
-      positions[i3 + 1] = (Math.random() - 0.5) * 100;
-      positions[i3 + 2] = (Math.random() - 0.5) * 100;
-      
-      // Colors
-      const color = new THREE.Color();
-      color.setHSL(Math.random() * 0.2 + 0.5, 0.8, 0.5 + Math.random() * 0.5);
-      colors[i3] = color.r;
-      colors[i3 + 1] = color.g;
-      colors[i3 + 2] = color.b;
-      
-      // Sizes
-      sizes[i] = Math.random() * 3 + 1;
-    }
-    
-    const particleGeometry = new THREE.BufferGeometry();
-    particleGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-    particleGeometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-    particleGeometry.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
-    
-    const particleMaterial = new THREE.PointsMaterial({
-      size: 2,
-      sizeAttenuation: true,
-      vertexColors: true,
-      transparent: true,
-      opacity: 0.8,
-      blending: THREE.AdditiveBlending
-    });
-    
-    const particleSystem = new THREE.Points(particleGeometry, particleMaterial);
-    this.scene.add(particleSystem);
-    this.particles.push(particleSystem);
-    this.geometries.push(particleGeometry);
-    this.materials.push(particleMaterial);
-  }
-  
-  createNebula() {
-    // Create nebula-like cloud effect
-    const nebulaGeometry = new THREE.SphereGeometry(15, 32, 32);
-    const nebulaMaterial = new THREE.MeshBasicMaterial({
-      color: 0x4a0e4e,
-      transparent: true,
-      opacity: 0.1,
-      side: THREE.BackSide
-    });
-    
-    const nebula = new THREE.Mesh(nebulaGeometry, nebulaMaterial);
-    nebula.userData = {
-      rotationSpeed: { x: 0.001, y: 0.002, z: 0.0015 }
-    };
-    
-    this.scene.add(nebula);
-    this.meshes.push(nebula);
-    this.geometries.push(nebulaGeometry);
-    this.materials.push(nebulaMaterial);
-  }
-  
-  setupLighting() {
-    // Much brighter lighting for model visibility
-    
-    // Strong ambient light for overall illumination
-    const ambientLight = new THREE.AmbientLight(0x404040, 1.5); // Increased intensity
-    this.scene.add(ambientLight);
-    
-    // Main directional light (key light)
-    const mainLight = new THREE.DirectionalLight(0xffffff, 2.0); // Much brighter
-    mainLight.position.set(20, 20, 20);
-    mainLight.castShadow = true;
-    mainLight.shadow.mapSize.width = 2048;
-    mainLight.shadow.mapSize.height = 2048;
-    mainLight.shadow.camera.near = 0.5;
-    mainLight.shadow.camera.far = 1000;
-    mainLight.shadow.camera.left = -100;
-    mainLight.shadow.camera.right = 100;
-    mainLight.shadow.camera.top = 100;
-    mainLight.shadow.camera.bottom = -100;
-    this.scene.add(mainLight);
-    
-    // Fill light from opposite side
-    const fillLight = new THREE.DirectionalLight(0x8888ff, 1.0);
-    fillLight.position.set(-20, 10, -20);
-    this.scene.add(fillLight);
-    
-    // Back light for rim lighting
-    const backLight = new THREE.DirectionalLight(0xffaa88, 0.8);
-    backLight.position.set(0, 10, -30);
-    this.scene.add(backLight);
-    
-    // Multiple point lights for dynamic illumination
-    const pointLight1 = new THREE.PointLight(0x00ffff, 1.5, 100);
-    pointLight1.position.set(15, 15, 15);
-    this.scene.add(pointLight1);
-    
-    const pointLight2 = new THREE.PointLight(0xff4081, 1.2, 80);
-    pointLight2.position.set(-15, 10, -15);
-    this.scene.add(pointLight2);
-    
-    const pointLight3 = new THREE.PointLight(0x00ff88, 1.0, 60);
-    pointLight3.position.set(0, 25, 0);
-    this.scene.add(pointLight3);
-    
-    // Hemisphere light for natural ambient lighting
-    const hemisphereLight = new THREE.HemisphereLight(0x87ceeb, 0x362d1d, 1.0); // Increased
-    this.scene.add(hemisphereLight);
-    
-    // Spot light for dramatic effect
-    const spotLight = new THREE.SpotLight(0xffffff, 2.0);
-    spotLight.position.set(0, 50, 30);
-    spotLight.target.position.set(0, 0, 0);
-    spotLight.angle = Math.PI / 4;
-    spotLight.penumbra = 0.2;
-    spotLight.decay = 2;
-    spotLight.distance = 100;
-    this.scene.add(spotLight);
-    this.scene.add(spotLight.target);
-    
-    console.log('Enhanced lighting setup complete');
-  }
-  
-  setupEventListeners() {
-    // Mouse movement for parallax effect
-    document.addEventListener('mousemove', (event) => {
-      this.mouseX = (event.clientX / window.innerWidth) * 2 - 1;
-      this.mouseY = -(event.clientY / window.innerHeight) * 2 + 1;
-    });
-    
-    // Window resize
-    window.addEventListener('resize', () => {
-      this.handleResize();
-    });
-    
-    // Scroll effect
-    window.addEventListener('scroll', () => {
-      this.handleScroll();
-    });
-  }
-  
-  handleResize() {
-    if (!this.camera || !this.renderer) return;
-    
-    this.camera.aspect = window.innerWidth / window.innerHeight;
-    this.camera.updateProjectionMatrix();
-    this.renderer.setSize(window.innerWidth, window.innerHeight);
-  }
-  
-  handleScroll() {
-    const scrollY = window.pageYOffset;
-    const maxScroll = document.body.scrollHeight - window.innerHeight;
-    const scrollProgress = Math.min(scrollY / maxScroll, 1);
-    
-    // Move camera based on scroll but keep model in view
-    if (this.camera) {
-      // Keep camera in a reasonable range to always see the model
-      this.camera.position.z = 15 + scrollProgress * 10; // Closer range
-      this.camera.position.y = 5 + scrollProgress * 3;   // Less vertical movement
-      this.camera.rotation.z = scrollProgress * 0.02;    // Reduced rotation
-      this.camera.lookAt(0, 0, 0); // Always look at model center
-    }
-    
-    // Rotate the wonderful world model based on scroll
-    if (this.wonderfulWorldModel && this.modelLoaded) {
-      this.wonderfulWorldModel.rotation.x = scrollProgress * Math.PI * 0.1; // Reduced rotation
-      this.wonderfulWorldModel.rotation.y += scrollProgress * 0.005;        // Slower rotation
-    }
-  }
-  
-  animate() {
-    this.animationId = requestAnimationFrame(() => this.animate());
-    
-    this.time += 0.005;
-    
-    // Camera parallax based on mouse - keep camera closer to model
-    if (this.camera) {
-      const targetX = this.mouseX * 2; // Reduced movement
-      const targetY = this.mouseY * 2 + 5; // Keep camera higher
-      this.camera.position.x += (targetX - this.camera.position.x) * 0.05;
-      this.camera.position.y += (targetY - this.camera.position.y) * 0.05;
-      this.camera.lookAt(0, 0, 0); // Always look at scene center where model is
-    }
-    
-    // Animate the wonderful world model
-    if (this.wonderfulWorldModel && this.modelLoaded) {
-      const userData = this.wonderfulWorldModel.userData;
-      if (userData.rotationSpeed) {
-        this.wonderfulWorldModel.rotation.x += userData.rotationSpeed.x;
-        this.wonderfulWorldModel.rotation.y += userData.rotationSpeed.y;
-        this.wonderfulWorldModel.rotation.z += userData.rotationSpeed.z;
-      }
-      
-      // Subtle floating animation - but keep model centered
-      const baseY = 0; // Keep at center instead of -2
-      this.wonderfulWorldModel.position.y = baseY + Math.sin(this.time * 0.5) * 0.3;
-    }
-    
-    // Animate other meshes (fallback geometry if model fails)
-    this.meshes.forEach((mesh) => {
-      if (mesh === this.wonderfulWorldModel) return; // Skip model, handled above
-      
-      const userData = mesh.userData;
-      
-      // Rotation
-      if (userData.rotationSpeed) {
-        mesh.rotation.x += userData.rotationSpeed.x;
-        mesh.rotation.y += userData.rotationSpeed.y;
-        mesh.rotation.z += userData.rotationSpeed.z;
-      }
-      
-      // Floating animation
-      if (userData.floatSpeed && userData.originalY !== undefined) {
-        mesh.position.y = userData.originalY + Math.sin(this.time * userData.floatSpeed) * 2;
-      }
-    });
-    
-    // Animate particles
-    this.particles.forEach((particleSystem) => {
-      particleSystem.rotation.y += 0.001;
-      
-      // Subtle pulsing effect
-      const positions = particleSystem.geometry.attributes.position.array;
-      for (let i = 0; i < positions.length; i += 3) {
-        positions[i + 1] += Math.sin(this.time + positions[i] * 0.01) * 0.01;
-      }
-      particleSystem.geometry.attributes.position.needsUpdate = true;
-    });
-    
-    // Render the scene
-    if (this.renderer && this.scene && this.camera) {
-      this.renderer.render(this.scene, this.camera);
-    }
-  }
-  
-  // Methods to sync with voice and other interactions
-  syncWithVoice(speaking) {
-    if (!this.scene) return;
-    
-    const intensity = speaking ? 1.8 : 1.0;
-    const speed = speaking ? 0.004 : 0.002;
-    
-    // Update wonderful world model animation based on voice
-    if (this.wonderfulWorldModel && this.modelLoaded) {
-      const userData = this.wonderfulWorldModel.userData;
-      if (userData.rotationSpeed) {
-        userData.rotationSpeed.y = speed * intensity;
-      }
-      
-      // Change model lighting when speaking
-      this.wonderfulWorldModel.traverse((child) => {
-        if (child.isMesh && child.material) {
-          if (child.material.emissive) {
-            const emissiveIntensity = speaking ? 0.5 : 0.2;
-            child.material.emissiveIntensity = emissiveIntensity;
-          }
+
+        try {
+            const response = await emailjs.send(
+                this.config.serviceId,
+                this.config.templateId,
+                emailData
+            );
+            
+            this.rateLimitCount++;
+            console.log('Email sent successfully:', response);
+            return response;
+        } catch (error) {
+            console.error('Email sending failed:', error);
+            throw error;
         }
-      });
     }
-    
-    // Update particle animation speed and intensity
-    this.particles.forEach((particleSystem) => {
-      if (particleSystem.material) {
-        particleSystem.material.opacity = speaking ? 1.0 : 0.8;
-        particleSystem.userData.rotationSpeed = speed * intensity;
-      }
-    });
-    
-    // Update mesh animation (for fallback geometry)
-    this.meshes.forEach((mesh) => {
-      if (mesh === this.wonderfulWorldModel) return; // Skip model, handled above
-      
-      if (mesh.userData.rotationSpeed) {
-        const baseSpeed = 0.01;
-        mesh.userData.rotationSpeed.x = baseSpeed * intensity * (Math.random() + 0.5);
-        mesh.userData.rotationSpeed.y = baseSpeed * intensity * (Math.random() + 0.5);
-        mesh.userData.rotationSpeed.z = baseSpeed * intensity * (Math.random() + 0.5);
-      }
-    });
-  }
-  
-  updateColors(hue = 0.5) {
-    // Update material colors dynamically
-    this.materials.forEach((material) => {
-      if (material.color) {
-        material.color.setHSL(hue, 0.7, 0.5);
-      }
-    });
-    
-    // Update wonderful world model colors
-    if (this.wonderfulWorldModel && this.modelLoaded) {
-      this.wonderfulWorldModel.traverse((child) => {
-        if (child.isMesh && child.material) {
-          // Subtle color tinting based on voice selection
-          if (child.material.emissive) {
-            const color = new THREE.Color();
-            color.setHSL(hue, 0.8, 0.1);
-            child.material.emissive.copy(color);
-          }
-        }
-      });
-    }
-  }
-  
-  dispose() {
-    // Cleanup
-    if (this.animationId) {
-      cancelAnimationFrame(this.animationId);
-    }
-    
-    // Dispose geometries and materials
-    this.geometries.forEach(geometry => geometry.dispose());
-    this.materials.forEach(material => material.dispose());
-    
-    if (this.renderer) {
-      this.renderer.dispose();
-    }
-  }
 }
 
 // Kyutai TTS Client for Ultra-Low Latency Streaming
@@ -919,7 +328,7 @@ class KyutaiTTSClient {
   }
 }
 
-// Enhanced Lunai Experience with Refined Logo, Kyutai TTS Integration, and 3D Background
+// Enhanced Lunai Experience with All Final Requirements
 class EnhancedLunaiExperience {
   constructor() {
     this.kyutaiClient = null;
@@ -928,9 +337,7 @@ class EnhancedLunaiExperience {
     this.analyserNode = null;
     this.visualizerData = null;
     this.isAudioInitialized = false;
-    
-    // 3D Background
-    this.threejsBackground = null;
+    this.emailManager = new EmailManager();
     
     // Voice and audio settings
     this.currentVoice = 'nova';
@@ -948,16 +355,42 @@ class EnhancedLunaiExperience {
     this.mouseY = 0;
     this.isSpeaking = false;
     
-    // Voice content from data
+    // Services section state
+    this.expandedService = null;
+    this.servicesSectionAnimated = false;
+    this.raLunaiAnimated = false;
+    
+    // Updated voice content with Ra Lunai AI and South Indian testimonials
     this.voiceContent = {
-      welcome: "Welcome to Lunai, where digital dreams take flight across the cosmic expanse. Behold the Wonderful World that surrounds us as I guide you through this ethereal journey of innovation and elegance.",
-      about: "Witness the convergence of technology and cosmic beauty, where every pixel dances with stardust and the Wonderful World comes alive with every interaction.",
-      features: "Discover the celestial technologies that power our cosmic vision - each one a star in our constellation of innovation, set against the backdrop of our beautiful world.",
-      contact: "Ready to embark on your own cosmic journey through the Wonderful World? The universe of possibilities awaits your command.",
+      welcome: "Welcome to Lunai, where digital dreams take flight across the cosmic expanse. Experience the eclipse of tomorrow with our revolutionary Ra Lunai AI system.",
+      services: "Discover our comprehensive cosmic services, designed to elevate your brand and vision across all digital dimensions. From strategic branding to political campaigns, we illuminate every path.",
+      about: "Behold the convergence of technology and cosmic beauty, where every pixel dances with stardust and every interaction echoes through the digital cosmos.",
+      features: "Witness the birth of Ra Lunai AI - our revolutionary artificial intelligence system coming soon to transform your digital universe with cosmic precision.",
+      contact: "Ready to embark on your own cosmic journey? The universe of possibilities awaits your command. Let us guide you through the eclipse of innovation.",
+      raLunai: "Ra Lunai AI - the next evolution in cosmic intelligence - coming soon to transform your digital universe with unprecedented power and elegance.",
+      email: {
+        loading: "Transmitting your message across digital dimensions...",
+        success: "Your message has been successfully launched into the cosmic network. We'll respond within 24 hours.",
+        error: "Cosmic communication interrupted. Please check your details and try again.",
+        validation: "Please complete all required fields to launch your cosmic message."
+      },
       interactions: {
-        hover: "You've discovered a cosmic secret in our wonderful world",
-        click: "Initiating stellar connection through the dimensions",
-        scroll: "Drifting deeper into the digital nebula of our world"
+        hover: "You've discovered a cosmic secret",
+        click: "Initiating stellar connection",
+        scroll: "Drifting deeper into the digital nebula"
+      },
+      serviceCategories: {
+        branding: "Strategic Branding Excellence - crafting stellar identities that shine across the cosmos",
+        research: "Strategic Research and Intelligence - deep cosmic insights to illuminate your path",
+        strategy: "Comprehensive Strategy Development - navigating the infinite possibilities of innovation",
+        political: "Political Campaign Excellence - stellar campaigns that resonate across all demographics",
+        digital: "Digital Web Excellence - cosmic experiences that transcend digital boundaries",
+        content: "Content and Creative Excellence - illuminating content across all cosmic mediums"
+      },
+      testimonials: {
+        priya: "Dr. Priya Krishnamurthy from Chennai praises our innovative voice synthesis and cosmic design philosophy",
+        rajesh: "Rajesh Nair from Bangalore celebrates our AI voice technology and strategic branding excellence",
+        kavitha: "Kavitha Reddy from Hyderabad highlights our transformative digital excellence and visionary approach"
       }
     };
 
@@ -972,24 +405,25 @@ class EnhancedLunaiExperience {
   }
 
   async init() {
-    // Initialize 3D Background first
-    this.init3DBackground();
-    
     await this.initAudio();
+    await this.initEmailJS();
     this.initKyutaiTTS();
     this.initFallbackTTS();
     this.setupUI();
     this.createStarfield();
     this.createParticles();
     this.initScrollAnimations();
-    this.initCarousel();
-    this.initFormHandling();
+    this.initEnhancedFormHandling();
     this.initCursorEffects();
     this.initVoiceControls();
     this.initSoundEffects();
     this.initMobileOptimizations();
     this.initVisualizer();
-    this.initRefinedLogo(); // Initialize refined logo without pulsing
+    this.initRefinedLogo();
+    this.initServicesSection();
+    this.initRaLunaiFeature();
+    this.initTestimonials();
+    this.initResponsiveOptimizations();
     
     // Start the animation loop
     this.animate();
@@ -1001,13 +435,282 @@ class EnhancedLunaiExperience {
     }, 1500);
   }
 
-  // Initialize 3D Background
-  init3DBackground() {
-    try {
-      this.threejsBackground = new ThreeJSBackground();
-      console.log('3D background initialized successfully');
-    } catch (error) {
-      console.warn('Failed to initialize 3D background:', error);
+  // Initialize responsive optimizations
+  initResponsiveOptimizations() {
+    // Detect device type
+    this.deviceType = this.getDeviceType();
+    document.body.classList.add(`device-${this.deviceType}`);
+    
+    // Handle orientation changes on mobile
+    if (this.deviceType === 'mobile') {
+      window.addEventListener('orientationchange', () => {
+        setTimeout(() => {
+          this.handleOrientationChange();
+        }, 500);
+      });
+    }
+    
+    // Handle window resize
+    window.addEventListener('resize', () => {
+      this.handleResize();
+    });
+    
+    console.log(`Initialized for ${this.deviceType} device`);
+  }
+
+  getDeviceType() {
+    const width = window.innerWidth;
+    if (width >= 1200) return 'desktop';
+    if (width >= 768) return 'tablet';
+    return 'mobile';
+  }
+
+  handleOrientationChange() {
+    // Recalculate layout for mobile orientation changes
+    this.deviceType = this.getDeviceType();
+    document.body.className = document.body.className.replace(/device-\w+/, `device-${this.deviceType}`);
+    
+    // Adjust particle count for performance
+    if (this.deviceType === 'mobile') {
+      this.particles = this.particles.slice(0, 10);
+    }
+  }
+
+  handleResize() {
+    const newDeviceType = this.getDeviceType();
+    if (newDeviceType !== this.deviceType) {
+      this.deviceType = newDeviceType;
+      document.body.className = document.body.className.replace(/device-\w+/, `device-${this.deviceType}`);
+      
+      // Adjust effects based on device type
+      this.adjustEffectsForDevice();
+    }
+  }
+
+  adjustEffectsForDevice() {
+    switch (this.deviceType) {
+      case 'mobile':
+        this.particles = this.particles.slice(0, 10);
+        break;
+      case 'tablet':
+        this.particles = this.particles.slice(0, 15);
+        break;
+      case 'desktop':
+        // Full effects for desktop
+        break;
+    }
+  }
+
+  // Initialize Ra Lunai AI feature
+  initRaLunaiFeature() {
+    const raLunaiFeature = document.querySelector('.ra-lunai-feature');
+    if (!raLunaiFeature) return;
+
+    // Setup intersection observer for Ra Lunai AI
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting && !this.raLunaiAnimated) {
+          this.raLunaiAnimated = true;
+          
+          // Animate Ra Lunai AI feature
+          raLunaiFeature.classList.add('animate');
+          
+          // Voice narration for Ra Lunai AI
+          if (this.isAudioInitialized) {
+            setTimeout(() => {
+              this.speak(this.voiceContent.raLunai);
+            }, 1000);
+          }
+          
+          // Special effects for Ra Lunai AI
+          this.createRaLunaiEffects(raLunaiFeature);
+        }
+      });
+    }, { 
+      threshold: 0.5,
+      rootMargin: '-100px'
+    });
+
+    observer.observe(raLunaiFeature);
+
+    // Add hover effects
+    raLunaiFeature.addEventListener('mouseenter', () => {
+      if (this.isAudioInitialized) {
+        setTimeout(() => {
+          this.speak("Ra Lunai AI represents the future of cosmic intelligence - revolutionary technology arriving soon");
+        }, 300);
+      }
+      this.createCosmicRipple(raLunaiFeature);
+    });
+  }
+
+  createRaLunaiEffects(element) {
+    // Create special cosmic effects for Ra Lunai AI
+    for (let i = 0; i < 12; i++) {
+      const particle = document.createElement('div');
+      particle.style.cssText = `
+        position: absolute;
+        width: 6px;
+        height: 6px;
+        background: linear-gradient(45deg, #00ffff, #00ff88);
+        border-radius: 50%;
+        pointer-events: none;
+        z-index: 1000;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+      `;
+      
+      element.appendChild(particle);
+      
+      const angle = (i / 12) * Math.PI * 2;
+      const distance = 150 + Math.random() * 100;
+      const duration = 2000 + Math.random() * 1000;
+      
+      particle.animate([
+        { 
+          transform: 'translate(-50%, -50%) scale(0)',
+          opacity: 1 
+        },
+        { 
+          transform: `translate(${Math.cos(angle) * distance - 50}%, ${Math.sin(angle) * distance - 50}%) scale(1)`,
+          opacity: 0 
+        }
+      ], {
+        duration: duration,
+        easing: 'cubic-bezier(0.25, 0.46, 0.45, 0.94)'
+      }).addEventListener('finish', () => {
+        if (particle.parentNode) {
+          particle.parentNode.removeChild(particle);
+        }
+      });
+    }
+
+    this.playSound('cosmic', 600, 0.4);
+  }
+
+  createCosmicRipple(element) {
+    const rect = element.getBoundingClientRect();
+    const ripple = document.createElement('div');
+    
+    ripple.style.cssText = `
+      position: fixed;
+      width: 40px;
+      height: 40px;
+      background: radial-gradient(circle, rgba(0, 255, 255, 0.4) 0%, transparent 70%);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 999;
+      left: ${rect.left + rect.width / 2 - 20}px;
+      top: ${rect.top + rect.height / 2 - 20}px;
+      transform: scale(0);
+    `;
+    
+    document.body.appendChild(ripple);
+    
+    ripple.animate([
+      { transform: 'scale(0)', opacity: 1 },
+      { transform: 'scale(5)', opacity: 0 }
+    ], {
+      duration: 1000,
+      easing: 'ease-out'
+    }).addEventListener('finish', () => {
+      if (ripple.parentNode) {
+        ripple.parentNode.removeChild(ripple);
+      }
+    });
+  }
+
+  // Initialize testimonials with South Indian professionals
+  initTestimonials() {
+    const testimonialStars = document.querySelectorAll('.testimonial-star');
+    
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry, index) => {
+        if (entry.isIntersecting) {
+          setTimeout(() => {
+            entry.target.classList.add('animate');
+            this.playSound('ping', 800 + index * 200, 0.3);
+          }, index * 300);
+        }
+      });
+    }, { 
+      threshold: 0.3,
+      rootMargin: '-50px'
+    });
+
+    testimonialStars.forEach(star => {
+      observer.observe(star);
+      
+      // Add hover effects with voice narration
+      star.addEventListener('mouseenter', () => {
+        if (this.isAudioInitialized) {
+          const cite = star.querySelector('cite').textContent;
+          let voiceKey = 'priya';
+          if (cite.includes('Rajesh')) voiceKey = 'rajesh';
+          if (cite.includes('Kavitha')) voiceKey = 'kavitha';
+          
+          setTimeout(() => {
+            this.speak(this.voiceContent.testimonials[voiceKey]);
+          }, 300);
+        }
+        
+        this.createStarBurst(star);
+      });
+    });
+  }
+
+  createStarBurst(element) {
+    const rect = element.getBoundingClientRect();
+    
+    for (let i = 0; i < 8; i++) {
+      const star = document.createElement('div');
+      star.style.cssText = `
+        position: fixed;
+        width: 4px;
+        height: 4px;
+        background: #00ffff;
+        border-radius: 50%;
+        pointer-events: none;
+        z-index: 1000;
+        left: ${rect.left + rect.width / 2}px;
+        top: ${rect.top + rect.height / 2}px;
+        box-shadow: 0 0 10px #00ffff;
+      `;
+      
+      document.body.appendChild(star);
+      
+      const angle = (i / 8) * Math.PI * 2;
+      const distance = 80 + Math.random() * 40;
+      const duration = 1200 + Math.random() * 400;
+      
+      star.animate([
+        { 
+          transform: 'translate(-50%, -50%) scale(1)',
+          opacity: 1 
+        },
+        { 
+          transform: `translate(${Math.cos(angle) * distance - 50}%, ${Math.sin(angle) * distance - 50}%) scale(0)`,
+          opacity: 0 
+        }
+      ], {
+        duration: duration,
+        easing: 'cubic-bezier(0.25, 0.46, 0.45, 0.94)'
+      }).addEventListener('finish', () => {
+        if (star.parentNode) {
+          star.parentNode.removeChild(star);
+        }
+      });
+    }
+  }
+
+  // Initialize EmailJS
+  async initEmailJS() {
+    const success = await this.emailManager.initialize();
+    if (success) {
+      console.log('Email system ready for cosmic transmissions');
+    } else {
+      console.log('Email system using demo mode - configure EmailJS for full functionality');
     }
   }
 
@@ -1032,7 +735,6 @@ class EnhancedLunaiExperience {
       
       // Ensure maximum visibility
       logoText.style.fontFamily = '"Orbitron", monospace';
-      logoText.style.fontSize = '3rem';
       logoText.style.fontWeight = '900';
       logoText.style.letterSpacing = '0.5rem';
       logoText.style.textRendering = 'optimizeLegibility';
@@ -1045,14 +747,657 @@ class EnhancedLunaiExperience {
       logoBackdrop.style.top = '50%';
       logoBackdrop.style.left = '50%';
       logoBackdrop.style.transform = 'translate(-50%, -50%)';
-      logoBackdrop.style.width = '500px';
-      logoBackdrop.style.height = '200px';
       logoBackdrop.style.borderRadius = '50%';
       logoBackdrop.style.zIndex = '1';
       // No animation - static backdrop for professional appearance
     }
     
     console.log('Refined chrome logo initialized - no pulsing effects');
+  }
+
+  // Initialize Services Section functionality
+  initServicesSection() {
+    console.log('Initializing services section...');
+    
+    // Setup service card interactions
+    this.setupServiceCards();
+    
+    // Setup intersection observer for services section
+    this.setupServicesObserver();
+    
+    console.log('Services section initialized');
+  }
+
+  setupServiceCards() {
+    const serviceCards = document.querySelectorAll('.service-card');
+    
+    serviceCards.forEach(card => {
+      const expandBtn = card.querySelector('.service-expand-btn');
+      const serviceType = card.dataset.service;
+      
+      // Hover effects with voice narration
+      card.addEventListener('mouseenter', () => {
+        if (this.isAudioInitialized && this.voiceContent.serviceCategories[serviceType]) {
+          // Delay for smooth interaction
+          setTimeout(() => {
+            this.speak(this.voiceContent.serviceCategories[serviceType]);
+          }, 300);
+        }
+        
+        // Visual hover effects
+        this.createParticleEffect(card);
+        this.playSound('hover', 600, 0.15);
+      });
+
+      // Click to expand/collapse services
+      if (expandBtn) {
+        expandBtn.addEventListener('click', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          this.toggleServiceCard(card, serviceType);
+        });
+      }
+
+      // Card click to expand
+      card.addEventListener('click', (e) => {
+        if (e.target.closest('.service-list') || e.target.closest('.service-expand-btn')) {
+          return;
+        }
+        this.toggleServiceCard(card, serviceType);
+      });
+    });
+  }
+
+  toggleServiceCard(card, serviceType) {
+    const isCurrentlyExpanded = card.classList.contains('expanded');
+    const expandBtn = card.querySelector('.service-expand-btn span');
+    const serviceList = card.querySelector('.service-list');
+    
+    if (isCurrentlyExpanded) {
+      // Collapse current card
+      card.classList.remove('expanded');
+      this.expandedService = null;
+      
+      if (expandBtn) {
+        expandBtn.textContent = 'Explore Services';
+      }
+      
+      // Animate collapse
+      if (serviceList) {
+        serviceList.style.maxHeight = '0';
+        serviceList.style.opacity = '0';
+      }
+      
+      this.speak("Service details collapsed");
+      
+      // Reset card position and size
+      setTimeout(() => {
+        card.style.gridColumn = '';
+        card.style.maxWidth = '';
+        card.style.margin = '';
+      }, 300);
+      
+    } else {
+      // Close any other expanded card first
+      if (this.expandedService && this.expandedService !== card) {
+        this.expandedService.classList.remove('expanded');
+        const prevExpandBtn = this.expandedService.querySelector('.service-expand-btn span');
+        const prevServiceList = this.expandedService.querySelector('.service-list');
+        
+        if (prevExpandBtn) {
+          prevExpandBtn.textContent = 'Explore Services';
+        }
+        if (prevServiceList) {
+          prevServiceList.style.maxHeight = '0';
+          prevServiceList.style.opacity = '0';
+        }
+        
+        // Reset previous card layout
+        this.expandedService.style.gridColumn = '';
+        this.expandedService.style.maxWidth = '';
+        this.expandedService.style.margin = '';
+      }
+      
+      // Expand current card
+      card.classList.add('expanded');
+      this.expandedService = card;
+      
+      if (expandBtn) {
+        expandBtn.textContent = 'Collapse Services';
+      }
+      
+      // Animate expansion
+      if (serviceList) {
+        serviceList.style.maxHeight = '400px';
+        serviceList.style.opacity = '1';
+      }
+      
+      // Voice narration for expanded services
+      const serviceTitle = card.querySelector('.service-title').textContent;
+      this.speak(`Exploring ${serviceTitle} - transforming visions into cosmic reality`);
+      
+      // Scroll expanded card into view with delay
+      setTimeout(() => {
+        card.scrollIntoView({ 
+          behavior: 'smooth', 
+          block: 'center' 
+        });
+      }, 400);
+    }
+    
+    // Play sound effect
+    this.playSound('click', isCurrentlyExpanded ? 300 : 500, 0.3);
+    
+    // Create visual effects
+    this.createExpandEffect(card);
+  }
+
+  createParticleEffect(element) {
+    const rect = element.getBoundingClientRect();
+    const particles = [];
+    
+    for (let i = 0; i < 8; i++) {
+      const particle = document.createElement('div');
+      particle.style.cssText = `
+        position: fixed;
+        width: 4px;
+        height: 4px;
+        background: #00ffff;
+        border-radius: 50%;
+        pointer-events: none;
+        z-index: 1000;
+        left: ${rect.left + rect.width / 2}px;
+        top: ${rect.top + rect.height / 2}px;
+        opacity: 1;
+      `;
+      
+      document.body.appendChild(particle);
+      particles.push(particle);
+      
+      // Animate particle
+      const angle = (i / 8) * Math.PI * 2;
+      const distance = 50 + Math.random() * 30;
+      const duration = 800 + Math.random() * 400;
+      
+      particle.animate([
+        { 
+          transform: 'translate(0, 0) scale(1)',
+          opacity: 1 
+        },
+        { 
+          transform: `translate(${Math.cos(angle) * distance}px, ${Math.sin(angle) * distance}px) scale(0)`,
+          opacity: 0 
+        }
+      ], {
+        duration: duration,
+        easing: 'cubic-bezier(0.25, 0.46, 0.45, 0.94)'
+      }).addEventListener('finish', () => {
+        if (particle.parentNode) {
+          particle.parentNode.removeChild(particle);
+        }
+      });
+    }
+  }
+
+  createExpandEffect(element) {
+    const rect = element.getBoundingClientRect();
+    const ripple = document.createElement('div');
+    
+    ripple.style.cssText = `
+      position: fixed;
+      width: 20px;
+      height: 20px;
+      background: radial-gradient(circle, rgba(0, 255, 255, 0.3) 0%, transparent 70%);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 999;
+      left: ${rect.left + rect.width / 2 - 10}px;
+      top: ${rect.top + rect.height / 2 - 10}px;
+      transform: scale(0);
+    `;
+    
+    document.body.appendChild(ripple);
+    
+    ripple.animate([
+      { transform: 'scale(0)', opacity: 1 },
+      { transform: 'scale(3)', opacity: 0 }
+    ], {
+      duration: 600,
+      easing: 'ease-out'
+    }).addEventListener('finish', () => {
+      if (ripple.parentNode) {
+        ripple.parentNode.removeChild(ripple);
+      }
+    });
+  }
+
+  setupServicesObserver() {
+    const servicesSection = document.getElementById('services');
+    if (!servicesSection) return;
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting && !this.servicesSectionAnimated) {
+          this.servicesSectionAnimated = true;
+          
+          // Animate service cards
+          this.animateServiceCards();
+          
+          // Voice narration for services section
+          if (this.isAudioInitialized) {
+            setTimeout(() => {
+              this.speak(this.voiceContent.services);
+            }, 800);
+          }
+        }
+      });
+    }, { 
+      threshold: 0.3,
+      rootMargin: '-100px'
+    });
+
+    observer.observe(servicesSection);
+  }
+
+  animateServiceCards() {
+    const serviceCards = document.querySelectorAll('.service-card');
+    
+    serviceCards.forEach((card, index) => {
+      const delay = parseInt(card.dataset.delay) || index * 200;
+      
+      setTimeout(() => {
+        card.classList.add('animate');
+        this.playSound('ping', 800 + index * 100, 0.2);
+      }, delay);
+    });
+  }
+
+  // FIXED: Enhanced Form Handling with proper dropdown functionality
+  initEnhancedFormHandling() {
+    const form = document.getElementById('contactForm');
+    if (!form) return;
+
+    // FIXED: Properly handle dropdown functionality
+    const dropdown = document.getElementById('contactInterest');
+    if (dropdown) {
+      // Ensure dropdown is fully functional
+      dropdown.style.pointerEvents = 'auto';
+      dropdown.style.position = 'relative';
+      dropdown.style.zIndex = '1000';
+      
+      // Remove any potential blocking elements
+      dropdown.style.webkitAppearance = 'menulist';
+      dropdown.style.mozAppearance = 'menulist';
+      dropdown.style.appearance = 'menulist';
+      
+      // Force cursor to show it's clickable
+      dropdown.style.cursor = 'pointer';
+      
+      // Clear any CSS that might interfere
+      dropdown.style.userSelect = 'auto';
+      dropdown.style.webkitUserSelect = 'auto';
+      dropdown.style.mozUserSelect = 'auto';
+      
+      // Add explicit event listeners
+      dropdown.addEventListener('mousedown', (e) => {
+        console.log('Dropdown mousedown event triggered');
+        e.stopPropagation();
+      });
+      
+      dropdown.addEventListener('click', (e) => {
+        console.log('Dropdown click event triggered');
+        e.stopPropagation();
+        // Force focus to ensure dropdown opens
+        dropdown.focus();
+      });
+
+      dropdown.addEventListener('change', (e) => {
+        console.log('Dropdown changed to:', e.target.value);
+        this.clearFieldError(e.target);
+        
+        // Voice feedback for selection
+        if (this.isAudioInitialized && e.target.value) {
+          const selectedText = e.target.options[e.target.selectedIndex].text;
+          this.speak(`Selected ${selectedText}`);
+        }
+      });
+
+      dropdown.addEventListener('focus', () => {
+        console.log('Dropdown focused');
+        this.clearFieldError(dropdown);
+        // Add visual feedback when focused
+        dropdown.style.borderColor = '#00ffff';
+        dropdown.style.boxShadow = '0 0 20px rgba(0, 255, 255, 0.3)';
+      });
+
+      dropdown.addEventListener('blur', () => {
+        console.log('Dropdown blurred');
+        // Reset border when not focused (unless there's an error)
+        if (!dropdown.classList.contains('error')) {
+          dropdown.style.borderColor = '';
+          dropdown.style.boxShadow = '';
+        }
+      });
+
+      // Test dropdown functionality
+      console.log('Dropdown setup completed. Available options:', dropdown.options.length);
+      for (let i = 0; i < dropdown.options.length; i++) {
+        console.log(`Option ${i}: ${dropdown.options[i].value} - ${dropdown.options[i].text}`);
+      }
+    } else {
+      console.error('Contact interest dropdown not found!');
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      await this.handleEnhancedFormSubmission(form);
+    });
+
+    // Real-time validation
+    const inputs = form.querySelectorAll('input, textarea, select');
+    inputs.forEach(input => {
+      let hasBeenTouched = false;
+      
+      input.addEventListener('focus', () => {
+        this.clearFieldError(input);
+      });
+
+      input.addEventListener('blur', () => {
+        hasBeenTouched = true;
+        if (input.value.trim() || input.tagName === 'SELECT') {
+          this.validateField(input);
+        }
+      });
+
+      input.addEventListener('input', () => {
+        this.clearFieldError(input);
+        if (hasBeenTouched && input.value.trim()) {
+          setTimeout(() => this.validateField(input), 500);
+        }
+      });
+
+      input.addEventListener('change', () => {
+        hasBeenTouched = true;
+        this.clearFieldError(input);
+        this.validateField(input);
+      });
+    });
+
+    console.log('Enhanced form handling initialized');
+  }
+
+  validateField(field) {
+    const value = field.value.trim();
+    const fieldName = field.name;
+    let isValid = true;
+    let errorMessage = '';
+
+    switch (fieldName) {
+      case 'from_name':
+        if (value.length < 2) {
+          isValid = false;
+          errorMessage = 'Name must be at least 2 characters';
+        }
+        break;
+      case 'reply_to':
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+          isValid = false;
+          errorMessage = 'Please enter a valid email address';
+        }
+        break;
+      case 'interest_area':
+        if (!value || value === '') {
+          isValid = false;
+          errorMessage = 'Please select your area of interest';
+        }
+        break;
+      case 'message':
+        if (value.length < 10) {
+          isValid = false;
+          errorMessage = 'Message must be at least 10 characters';
+        }
+        break;
+    }
+
+    if (!isValid) {
+      this.showFieldError(field, errorMessage);
+    } else {
+      this.clearFieldError(field);
+    }
+
+    return isValid;
+  }
+
+  showFieldError(field, message) {
+    field.style.borderColor = '#ff4444';
+    field.style.boxShadow = '0 0 10px rgba(255, 68, 68, 0.3)';
+    field.classList.add('error');
+    
+    if (this.isAudioInitialized && !field.hasAttribute('data-error-spoken')) {
+      field.setAttribute('data-error-spoken', 'true');
+      setTimeout(() => {
+        this.speak(message);
+        setTimeout(() => field.removeAttribute('data-error-spoken'), 3000);
+      }, 100);
+    }
+  }
+
+  clearFieldError(field) {
+    field.style.borderColor = '';
+    field.style.boxShadow = '';
+    field.classList.remove('error');
+    field.removeAttribute('data-error-spoken');
+  }
+
+  async handleEnhancedFormSubmission(form) {
+    const formData = new FormData(form);
+    const data = Object.fromEntries(formData.entries());
+    
+    const submitBtn = document.getElementById('submitBtn');
+    const formMessage = document.getElementById('formMessage');
+    const btnText = submitBtn.querySelector('.btn-text');
+    const btnLoading = submitBtn.querySelector('.btn-loading');
+
+    // Reset previous states
+    this.clearFormMessage(formMessage);
+    
+    // Validate all fields before submission
+    const allInputs = form.querySelectorAll('input[required], textarea[required], select[required]');
+    let isFormValid = true;
+    let firstInvalidField = null;
+
+    allInputs.forEach(input => {
+      if (!this.validateField(input)) {
+        isFormValid = false;
+        if (!firstInvalidField) {
+          firstInvalidField = input;
+        }
+      }
+    });
+
+    if (!isFormValid) {
+      this.showFormMessage(formMessage, 'Please complete all required fields correctly.', 'error');
+      if (this.isAudioInitialized) {
+        this.speak(this.voiceContent.email.validation);
+      }
+      if (firstInvalidField) {
+        firstInvalidField.focus();
+        firstInvalidField.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+      return;
+    }
+    
+    try {
+      // Show loading state
+      this.setFormLoadingState(submitBtn, btnText, btnLoading, true);
+      this.showFormMessage(formMessage, 'Transmitting your message across digital dimensions...', 'loading');
+      
+      // Voice feedback
+      if (this.isAudioInitialized) {
+        this.speak(this.voiceContent.email.loading);
+      }
+
+      // Send email through EmailJS (or simulate if not configured)
+      if (this.emailManager.isInitialized) {
+        await this.emailManager.sendEmail(data);
+      } else {
+        // Simulate email sending for demo purposes
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        console.log('Demo mode: Email would be sent with data:', data);
+      }
+      
+      // Success state
+      this.setFormSuccessState(submitBtn, btnText, btnLoading);
+      this.showFormMessage(formMessage, 'Your message has been successfully launched into the cosmic network! We\'ll respond within 24 hours.', 'success');
+      
+      // Voice feedback
+      if (this.isAudioInitialized) {
+        this.speak(this.voiceContent.email.success);
+      }
+
+      // Visual effects
+      this.createSuccessParticles(submitBtn);
+      this.playSound('success', 800, 0.5);
+
+      // Reset form after delay
+      setTimeout(() => {
+        form.reset();
+        this.resetFormState(submitBtn, btnText, btnLoading);
+        this.clearFormMessage(formMessage);
+        
+        // Clear all field errors
+        allInputs.forEach(input => this.clearFieldError(input));
+      }, 5000);
+
+    } catch (error) {
+      console.error('Form submission error:', error);
+      
+      // Error state
+      this.setFormErrorState(submitBtn, btnText, btnLoading);
+      
+      let errorMessage = 'Cosmic communication interrupted. Please check your details and try again.';
+      if (error.message.includes('not initialized')) {
+        errorMessage = 'Email system not configured. This is a demo - please set up EmailJS for full functionality.';
+      } else if (error.message.includes('Rate limit')) {
+        errorMessage = 'Too many messages sent. Please wait a moment before trying again.';
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
+      this.showFormMessage(formMessage, errorMessage, 'error');
+      
+      // Voice feedback
+      if (this.isAudioInitialized) {
+        this.speak(this.voiceContent.email.error);
+      }
+
+      this.playSound('error', 300, 0.4);
+
+      // Reset form state after delay
+      setTimeout(() => {
+        this.resetFormState(submitBtn, btnText, btnLoading);
+      }, 3000);
+    }
+  }
+
+  setFormLoadingState(submitBtn, btnText, btnLoading, loading) {
+    if (loading) {
+      submitBtn.classList.add('loading');
+      submitBtn.disabled = true;
+      btnText.style.opacity = '0';
+      btnLoading.style.opacity = '1';
+    }
+  }
+
+  setFormSuccessState(submitBtn, btnText, btnLoading) {
+    submitBtn.classList.remove('loading');
+    submitBtn.classList.add('success');
+    btnText.textContent = 'Message Launched! 🚀';
+    btnText.style.opacity = '1';
+    btnLoading.style.opacity = '0';
+  }
+
+  setFormErrorState(submitBtn, btnText, btnLoading) {
+    submitBtn.classList.remove('loading');
+    submitBtn.classList.add('error');
+    btnText.textContent = 'Transmission Failed';
+    btnText.style.opacity = '1';
+    btnLoading.style.opacity = '0';
+  }
+
+  resetFormState(submitBtn, btnText, btnLoading) {
+    submitBtn.classList.remove('loading', 'success', 'error');
+    submitBtn.disabled = false;
+    btnText.textContent = 'Launch Your Message';
+    btnText.style.opacity = '1';
+    btnLoading.style.opacity = '0';
+  }
+
+  showFormMessage(messageEl, text, type) {
+    if (!messageEl) return;
+    
+    messageEl.textContent = text;
+    messageEl.className = `form-message ${type} show`;
+    
+    // Ensure message is visible
+    messageEl.style.display = 'block';
+    messageEl.style.opacity = '1';
+    messageEl.style.transform = 'translateY(0)';
+  }
+
+  clearFormMessage(messageEl) {
+    if (!messageEl) return;
+    
+    messageEl.classList.remove('show');
+    setTimeout(() => {
+      messageEl.className = 'form-message';
+      messageEl.textContent = '';
+      messageEl.style.display = 'none';
+    }, 300);
+  }
+
+  createSuccessParticles(element) {
+    const rect = element.getBoundingClientRect();
+    
+    for (let i = 0; i < 16; i++) {
+      const particle = document.createElement('div');
+      particle.className = 'success-particle';
+      particle.style.cssText = `
+        position: fixed;
+        width: 6px;
+        height: 6px;
+        background: #00ff88;
+        border-radius: 50%;
+        pointer-events: none;
+        z-index: 1000;
+        left: ${rect.left + rect.width / 2}px;
+        top: ${rect.top + rect.height / 2}px;
+      `;
+      
+      document.body.appendChild(particle);
+      
+      const angle = (i / 16) * Math.PI * 2;
+      const distance = 100 + Math.random() * 50;
+      const duration = 1000 + Math.random() * 500;
+      
+      particle.animate([
+        { 
+          transform: 'translate(0, 0) scale(1)',
+          opacity: 1 
+        },
+        { 
+          transform: `translate(${Math.cos(angle) * distance}px, ${Math.sin(angle) * distance}px) scale(0)`,
+          opacity: 0 
+        }
+      ], {
+        duration: duration,
+        easing: 'cubic-bezier(0.25, 0.46, 0.45, 0.94)'
+      }).addEventListener('finish', () => {
+        if (particle.parentNode) {
+          particle.parentNode.removeChild(particle);
+        }
+      });
+    }
   }
 
   async initAudio() {
@@ -1140,7 +1485,6 @@ class EnhancedLunaiExperience {
       toggleBtn.addEventListener('click', (e) => {
         e.preventDefault();
         e.stopPropagation();
-        console.log('Toggle button clicked');
         this.toggleAudioPanel();
       });
     }
@@ -1181,7 +1525,6 @@ class EnhancedLunaiExperience {
       btn.addEventListener('click', (e) => {
         e.preventDefault();
         e.stopPropagation();
-        console.log('Voice button clicked:', btn.dataset.voice);
         this.selectVoice(btn.dataset.voice);
         this.updateVoiceUI();
       });
@@ -1193,7 +1536,6 @@ class EnhancedLunaiExperience {
   }
 
   toggleAudioPanel() {
-    console.log('Toggling audio panel, current state:', this.isVoicePanelExpanded);
     const panel = document.getElementById('audioPanel');
     const expandedControls = document.getElementById('audioControls');
     
@@ -1204,31 +1546,17 @@ class EnhancedLunaiExperience {
         panel.classList.add('expanded');
         expandedControls.style.maxHeight = '400px';
         expandedControls.style.opacity = '1';
-        console.log('Panel expanded');
       } else {
         panel.classList.remove('expanded');
         expandedControls.style.maxHeight = '0';
         expandedControls.style.opacity = '0';
-        console.log('Panel collapsed');
       }
     }
   }
 
   selectVoice(voiceId) {
-    console.log('Selecting voice:', voiceId);
     this.currentVoice = voiceId;
     this.updateVoiceUI();
-    
-    // Update 3D background color based on voice
-    if (this.threejsBackground) {
-      const voiceColors = {
-        nova: 0.6,    // Cyan-blue
-        stellar: 0.1, // Orange-red
-        cosmos: 0.8,  // Purple
-        eclipse: 0.0  // Red
-      };
-      this.threejsBackground.updateColors(voiceColors[voiceId] || 0.5);
-    }
     
     // Test the voice with a short phrase
     this.speak(`Hello, I am ${this.voices[voiceId].name}, your ${this.voices[voiceId].personality.toLowerCase()}.`);
@@ -1239,7 +1567,6 @@ class EnhancedLunaiExperience {
     voiceButtons.forEach(btn => {
       btn.classList.toggle('active', btn.dataset.voice === this.currentVoice);
     });
-    console.log('Voice UI updated for:', this.currentVoice);
   }
 
   updateConnectionStatus(status) {
@@ -1261,11 +1588,9 @@ class EnhancedLunaiExperience {
     };
     
     statusText.textContent = statusMessages[status] || 'Unknown Status';
-    console.log('Connection status updated:', status);
   }
 
   updateSpeakingState(speaking) {
-    console.log('Speaking state changed:', speaking);
     this.isSpeaking = speaking;
     const indicator = document.getElementById('speakingIndicator');
     const visualizer = document.getElementById('audioVisualizer');
@@ -1281,38 +1606,30 @@ class EnhancedLunaiExperience {
     }
   }
 
-  // Updated visual sync - only voice-reactive effects, NO PULSING + 3D Background sync
+  // Updated visual sync - only voice-reactive effects, NO PULSING
   syncVisualElements(speaking) {
     const logo = document.querySelector('.logo-text');
     const crescents = document.querySelectorAll('.crescent');
+    const serviceCards = document.querySelectorAll('.service-card');
+    const featureCards = document.querySelectorAll('.feature-card');
     
     if (speaking) {
       // Only apply voice-reactive effects during speech
       logo?.classList.add('speaking');
       crescents.forEach(c => c.classList.add('voice-reactive'));
-      
-      // Sync 3D background with voice
-      if (this.threejsBackground) {
-        this.threejsBackground.syncWithVoice(true);
-      }
+      serviceCards.forEach(c => c.classList.add('speaking'));
+      featureCards.forEach(c => c.classList.add('speaking'));
     } else {
       // Return to static, professional appearance
       logo?.classList.remove('speaking');
       crescents.forEach(c => c.classList.remove('voice-reactive'));
-      
-      // Return 3D background to normal state
-      if (this.threejsBackground) {
-        this.threejsBackground.syncWithVoice(false);
-      }
+      serviceCards.forEach(c => c.classList.remove('speaking'));
+      featureCards.forEach(c => c.classList.remove('speaking'));
     }
-    
-    // NO logo glow pulsing - maintain static professional look
   }
 
   async speak(text, voice = this.currentVoice) {
     if (!text || this.isMuted) return false;
-
-    console.log('Speaking:', text, 'with voice:', voice);
 
     // Try Kyutai first
     if (this.kyutaiClient?.isConnected) {
@@ -1333,8 +1650,6 @@ class EnhancedLunaiExperience {
 
   speakWithFallback(text, voice) {
     if (!this.fallbackTTS) return false;
-
-    console.log('Using fallback TTS for:', text);
 
     // Cancel any ongoing speech
     this.fallbackTTS.cancel();
@@ -1371,12 +1686,10 @@ class EnhancedLunaiExperience {
     }
 
     utterance.onstart = () => {
-      console.log('Speech started');
       this.updateSpeakingState(true);
     };
     
     utterance.onend = () => {
-      console.log('Speech ended');
       this.updateSpeakingState(false);
     };
     
@@ -1399,10 +1712,7 @@ class EnhancedLunaiExperience {
 
   initVisualizer() {
     const canvas = document.getElementById('visualizerCanvas');
-    if (!canvas) {
-      console.log('Visualizer canvas not found');
-      return;
-    }
+    if (!canvas) return;
 
     const ctx = canvas.getContext('2d');
     let animationFrame;
@@ -1446,7 +1756,6 @@ class EnhancedLunaiExperience {
     };
 
     draw();
-    console.log('Visualizer initialized');
   }
 
   updateAudioVisualization(audioBuffer) {
@@ -1466,7 +1775,6 @@ class EnhancedLunaiExperience {
         await this.audioContext.resume();
       }
       this.isAudioInitialized = true;
-      console.log('Audio initialized');
       
       // Update connection status to show fallback is ready
       this.updateConnectionStatus('fallback');
@@ -1489,7 +1797,6 @@ class EnhancedLunaiExperience {
     if (welcomeBtn) {
       welcomeBtn.addEventListener('click', async (e) => {
         e.preventDefault();
-        console.log('Welcome button clicked');
         
         if (!this.isAudioInitialized) {
           await this.startVoiceExperience();
@@ -1510,7 +1817,13 @@ class EnhancedLunaiExperience {
     const observer = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
         if (entry.isIntersecting && entry.target.dataset.narrate) {
-          const content = this.voiceContent[entry.target.dataset.narrate];
+          let content = this.voiceContent[entry.target.dataset.narrate];
+          
+          // Special handling for features section (Ra Lunai AI)
+          if (entry.target.dataset.narrate === 'features') {
+            content = this.voiceContent.features;
+          }
+          
           if (content && this.isAudioInitialized) {
             // Delay to allow smooth scrolling
             setTimeout(() => {
@@ -1527,16 +1840,13 @@ class EnhancedLunaiExperience {
   }
 
   setupInteractiveNarration() {
-    // Card hover narration
+    // Card hover narration (excluding service cards which have their own handling)
     document.querySelectorAll('.feature-card').forEach(card => {
       card.addEventListener('mouseenter', () => {
         if (this.isAudioInitialized) {
-          const narrationKey = card.dataset.narrate;
-          if (narrationKey) {
-            setTimeout(() => {
-              this.speak(this.voiceContent.interactions.hover);
-            }, 300);
-          }
+          setTimeout(() => {
+            this.speak(this.voiceContent.interactions.hover);
+          }, 300);
         }
       });
     });
@@ -1609,7 +1919,10 @@ class EnhancedLunaiExperience {
     const starfield = document.getElementById('starfield');
     if (!starfield) return;
 
-    for (let i = 0; i < 200; i++) {
+    // Adjust star count based on device type
+    const starCount = this.deviceType === 'mobile' ? 100 : 200;
+
+    for (let i = 0; i < starCount; i++) {
       const star = document.createElement('div');
       star.className = 'star';
       star.style.cssText = `
@@ -1631,8 +1944,12 @@ class EnhancedLunaiExperience {
     const container = document.getElementById('particles');
     if (!container) return;
 
+    // Adjust particle frequency based on device type
+    const frequency = this.deviceType === 'mobile' ? 1000 : 500;
+    const maxParticles = this.deviceType === 'mobile' ? 10 : 20;
+
     setInterval(() => {
-      if (this.particles.length < 20) {
+      if (this.particles.length < maxParticles) {
         const particle = document.createElement('div');
         particle.className = 'particle';
         particle.style.left = Math.random() * 100 + '%';
@@ -1649,7 +1966,7 @@ class EnhancedLunaiExperience {
           }
         }, 8000);
       }
-    }, 500);
+    }, frequency);
   }
 
   initScrollAnimations() {
@@ -1697,116 +2014,49 @@ class EnhancedLunaiExperience {
     });
   }
 
-  initCarousel() {
-    const carousel = document.getElementById('featureCarousel');
-    const navDots = document.querySelectorAll('.nav-dot');
-    let currentSlide = 0;
-    
-    const updateCarousel = (index) => {
-      const items = carousel?.querySelectorAll('.carousel-item');
-      if (!items) return;
-
-      items.forEach((item, i) => {
-        item.classList.toggle('active', i === index);
-      });
-
-      navDots.forEach((dot, i) => {
-        dot.classList.toggle('active', i === index);
-      });
-
-      currentSlide = index;
-      this.playSound('whoosh', 400, 0.3);
-    };
-
-    navDots.forEach((dot, index) => {
-      dot.addEventListener('click', () => {
-        updateCarousel(index);
-      });
-    });
-
-    setInterval(() => {
-      const nextSlide = (currentSlide + 1) % navDots.length;
-      updateCarousel(nextSlide);
-    }, 5000);
-  }
-
-  initFormHandling() {
-    const form = document.getElementById('contactForm');
-    form?.addEventListener('submit', (e) => {
-      e.preventDefault();
-      this.handleFormSubmission();
-    });
-  }
-
-  handleFormSubmission() {
-    const submitBtn = document.getElementById('submitBtn');
-    if (!submitBtn) return;
-
-    const burst = submitBtn.querySelector('.btn-burst');
-    if (burst) {
-      burst.style.width = '300px';
-      burst.style.height = '300px';
-      burst.style.opacity = '1';
-      
-      setTimeout(() => {
-        burst.style.width = '0';
-        burst.style.height = '0';
-        burst.style.opacity = '0';
-      }, 600);
-    }
-
-    this.playSound('success', 800, 0.5);
-    this.speak("Message launched successfully! Your cosmic journey begins now.");
-
-    submitBtn.innerHTML = '<span>Message Launched! 🚀</span>';
-    submitBtn.style.background = 'linear-gradient(45deg, #00ff88, #00cc66)';
-
-    setTimeout(() => {
-      submitBtn.innerHTML = '<span>Launch Into Tomorrow</span>';
-      submitBtn.style.background = 'linear-gradient(45deg, var(--cyan-glow), rgba(0, 255, 255, 0.8))';
-    }, 3000);
-  }
-
   initCursorEffects() {
     let trails = [];
-    const maxTrails = 10;
+    const maxTrails = this.deviceType === 'mobile' ? 5 : 10;
 
-    document.addEventListener('mousemove', (e) => {
-      this.mouseX = e.clientX;
-      this.mouseY = e.clientY;
+    // Only add cursor effects on non-touch devices
+    if (!('ontouchstart' in window)) {
+      document.addEventListener('mousemove', (e) => {
+        this.mouseX = e.clientX;
+        this.mouseY = e.clientY;
 
-      document.documentElement.style.setProperty('--mouse-x', e.clientX + 'px');
-      document.documentElement.style.setProperty('--mouse-y', e.clientY + 'px');
+        document.documentElement.style.setProperty('--mouse-x', e.clientX + 'px');
+        document.documentElement.style.setProperty('--mouse-y', e.clientY + 'px');
 
-      if (trails.length >= maxTrails) {
-        const oldTrail = trails.shift();
-        if (oldTrail && oldTrail.parentNode) {
-          oldTrail.parentNode.removeChild(oldTrail);
-        }
-      }
-
-      const trail = document.createElement('div');
-      trail.className = 'cursor-trail';
-      trail.style.left = e.clientX + 'px';
-      trail.style.top = e.clientY + 'px';
-      trail.style.opacity = '1';
-
-      document.body.appendChild(trail);
-      trails.push(trail);
-
-      setTimeout(() => {
-        trail.style.opacity = '0';
-        setTimeout(() => {
-          if (trail.parentNode) {
-            trail.parentNode.removeChild(trail);
+        if (trails.length >= maxTrails) {
+          const oldTrail = trails.shift();
+          if (oldTrail && oldTrail.parentNode) {
+            oldTrail.parentNode.removeChild(oldTrail);
           }
-        }, 300);
-      }, 50);
-    });
+        }
+
+        const trail = document.createElement('div');
+        trail.className = 'cursor-trail';
+        trail.style.left = e.clientX + 'px';
+        trail.style.top = e.clientY + 'px';
+        trail.style.opacity = '1';
+
+        document.body.appendChild(trail);
+        trails.push(trail);
+
+        setTimeout(() => {
+          trail.style.opacity = '0';
+          setTimeout(() => {
+            if (trail.parentNode) {
+              trail.parentNode.removeChild(trail);
+            }
+          }, 300);
+        }, 50);
+      });
+    }
   }
 
   initSoundEffects() {
-    const buttons = document.querySelectorAll('button, .btn, .cta-btn');
+    const buttons = document.querySelectorAll('button, .btn, .cta-btn, .service-expand-btn');
     buttons.forEach(button => {
       button.addEventListener('mouseenter', () => {
         this.playSound('hover', 800, 0.1);
@@ -1817,7 +2067,7 @@ class EnhancedLunaiExperience {
       });
     });
 
-    const cards = document.querySelectorAll('.feature-card, .feature-3d-card');
+    const cards = document.querySelectorAll('.feature-card, .service-card');
     cards.forEach(card => {
       card.addEventListener('mouseenter', () => {
         this.playSound('ping', 600, 0.15);
@@ -1831,7 +2081,21 @@ class EnhancedLunaiExperience {
     const oscillator = this.audioContext.createOscillator();
     const gainNode = this.audioContext.createGain();
     
-    oscillator.type = 'sine';
+    // Sound type variations
+    switch (type) {
+      case 'cosmic':
+        oscillator.type = 'sawtooth';
+        break;
+      case 'success':
+        oscillator.type = 'square';
+        break;
+      case 'error':
+        oscillator.type = 'triangle';
+        break;
+      default:
+        oscillator.type = 'sine';
+    }
+    
     oscillator.frequency.setValueAtTime(frequency, this.audioContext.currentTime);
     
     gainNode.gain.setValueAtTime(0, this.audioContext.currentTime);
@@ -1846,9 +2110,7 @@ class EnhancedLunaiExperience {
   }
 
   initMobileOptimizations() {
-    const isMobile = window.innerWidth <= 768;
-    
-    if (isMobile) {
+    if (this.deviceType === 'mobile') {
       this.particles = this.particles.slice(0, 10);
       document.body.classList.add('mobile-optimized');
       
@@ -1892,15 +2154,13 @@ class EnhancedLunaiExperience {
       rightCrescent.style.transform = `rotate(${-time * 20}deg)`;
     }
 
-    // NO logo glow pulsing - maintain static professional appearance
-
     requestAnimationFrame(() => this.animate());
   }
 }
 
 // Initialize the enhanced experience when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
-  console.log('DOM loaded, initializing Enhanced Lunai Experience with refined logo');
+  console.log('DOM loaded, initializing Final Enhanced Lunai Experience with FIXED dropdown');
   new EnhancedLunaiExperience();
 });
 
@@ -1909,9 +2169,9 @@ document.addEventListener('DOMContentLoaded', () => {
   const ctaBtn = document.getElementById('ctaBtn');
   if (ctaBtn) {
     ctaBtn.addEventListener('click', () => {
-      const aboutSection = document.getElementById('about');
-      if (aboutSection) {
-        aboutSection.scrollIntoView({ 
+      const servicesSection = document.getElementById('services');
+      if (servicesSection) {
+        servicesSection.scrollIntoView({ 
           behavior: 'smooth',
           block: 'start'
         });
@@ -1922,10 +2182,18 @@ document.addEventListener('DOMContentLoaded', () => {
   const scrollIndicator = document.querySelector('.scroll-indicator');
   if (scrollIndicator) {
     scrollIndicator.addEventListener('click', () => {
-      window.scrollTo({
-        top: window.innerHeight,
-        behavior: 'smooth'
-      });
+      const servicesSection = document.getElementById('services');
+      if (servicesSection) {
+        servicesSection.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start'
+        });
+      } else {
+        window.scrollTo({
+          top: window.innerHeight,
+          behavior: 'smooth'
+        });
+      }
     });
   }
 
@@ -1968,7 +2236,8 @@ voiceReactiveStyles.textContent = `
     }
   }
 
-  .feature-card.speaking {
+  .feature-card.speaking,
+  .service-card.speaking {
     animation: voiceReactiveGlow 2s ease-in-out infinite;
   }
 
@@ -1985,6 +2254,45 @@ voiceReactiveStyles.textContent = `
   body::after {
     left: var(--mouse-x, 0);
     top: var(--mouse-y, 0);
+  }
+
+  /* Device-specific optimizations */
+  .device-mobile .particles-container {
+    opacity: 0.5;
+  }
+
+  .device-mobile .starfield::before,
+  .device-mobile .starfield::after {
+    animation-duration: 180s;
+  }
+
+  .device-tablet .feature-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .device-desktop .services-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  /* FIXED: Ensure dropdown is always clickable */
+  select#contactInterest {
+    pointer-events: auto !important;
+    z-index: 1000 !important;
+    position: relative !important;
+    cursor: pointer !important;
+    user-select: auto !important;
+    -webkit-user-select: auto !important;
+    -moz-user-select: auto !important;
+  }
+
+  /* Ensure dropdown doesn't get blocked by other elements */
+  .form-group {
+    position: relative;
+    z-index: 100;
+  }
+
+  .form-group:focus-within {
+    z-index: 1001;
   }
 `;
 
